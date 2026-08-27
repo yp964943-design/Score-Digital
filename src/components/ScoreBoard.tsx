@@ -2,12 +2,22 @@ import React, { useState, useEffect, useRef } from "react";
 import { motion, AnimatePresence } from "motion/react";
 import { MatchSettings, LiveMatchState, SetScore, UndoState, SportType, GameMode, PlayerNames } from "../types";
 import { CourtVisualizer } from "./CourtVisualizer";
-import { playSound, announceScoreIndonesian } from "../utils/audio";
+import {
+  playSound,
+  announceScoreIndonesian,
+  speakCustomText,
+  setMasterAudioVolume,
+  getMasterAudioVolume,
+  setSpeechRate,
+  getSpeechRate,
+  SoundEffectType,
+} from "../utils/audio";
 import {
   RotateCcw,
   ArrowLeftRight,
   Volume2,
   VolumeX,
+  Volume1,
   Play,
   Pause,
   Save,
@@ -30,6 +40,10 @@ import {
   Flame,
   Zap,
   PartyPopper,
+  Sliders,
+  Megaphone,
+  Radio,
+  Check,
 } from "lucide-react";
 
 interface ScoreBoardProps {
@@ -53,6 +67,10 @@ export const ScoreBoard: React.FC<ScoreBoardProps> = ({ settings, onFinishMatch,
   // Sound and Voice Settings
   const [audioEnabled, setAudioEnabled] = useState<boolean>(true);
   const [speechEnabled, setSpeechEnabled] = useState<boolean>(true);
+  const [masterVolume, setMasterVolume] = useState<number>(0.8);
+  const [speechSpeed, setSpeechSpeed] = useState<number>(1.0);
+  const [isAudioModalOpen, setIsAudioModalOpen] = useState<boolean>(false);
+  const [isAnnouncingAnim, setIsAnnouncingAnim] = useState<boolean>(false);
 
   // Local state for editable player names
   const [playerNames, setPlayerNames] = useState<PlayerNames>(settings.playerNames);
@@ -91,6 +109,22 @@ export const ScoreBoard: React.FC<ScoreBoardProps> = ({ settings, onFinishMatch,
     setIsEditModalOpen(false);
   };
 
+  // Sync master volume and speech rate
+  const handleVolumeChange = (newVol: number) => {
+    setMasterVolume(newVol);
+    setMasterAudioVolume(newVol);
+    if (newVol > 0 && !audioEnabled) {
+      setAudioEnabled(true);
+    } else if (newVol === 0) {
+      setAudioEnabled(false);
+    }
+  };
+
+  const handleSpeechSpeedChange = (newSpeed: number) => {
+    setSpeechSpeed(newSpeed);
+    setSpeechRate(newSpeed);
+  };
+
   // Match State
   const [state, setState] = useState<LiveMatchState>({
     currentSetIndex: 0,
@@ -121,6 +155,35 @@ export const ScoreBoard: React.FC<ScoreBoardProps> = ({ settings, onFinishMatch,
     isMatchOver: boolean;
     countdown: number;
   } | null>(null);
+
+  // Instant Manual TTS Announcement
+  const triggerManualScoreAnnouncement = () => {
+    setIsAnnouncingAnim(true);
+    setTimeout(() => setIsAnnouncingAnim(false), 2000);
+
+    const isGamePointA = state.currentScoreA >= settings.targetPoints - 1 && state.currentScoreA > state.currentScoreB;
+    const isGamePointB = state.currentScoreB >= settings.targetPoints - 1 && state.currentScoreB > state.currentScoreA;
+    
+    announceScoreIndonesian(
+      state.currentScoreA,
+      state.currentScoreB,
+      playerNames.teamA,
+      playerNames.teamB,
+      settings.sport,
+      state.servingTeam,
+      settings.targetPoints,
+      isGamePointA,
+      isGamePointB,
+      state.isMatchOver ? (state.currentScoreA > state.currentScoreB ? "A" : "B") : null,
+      isDoubles,
+      state.servingPlayerIndex,
+      false,
+      null,
+      undefined,
+      undefined,
+      state.currentSetIndex
+    );
+  };
 
   // Start Timer
   useEffect(() => {
@@ -451,7 +514,7 @@ export const ScoreBoard: React.FC<ScoreBoardProps> = ({ settings, onFinishMatch,
         history: nextHistory,
       };
     });
-    if (audioEnabled) playSound("point");
+    if (audioEnabled) playSound("fault");
   };
 
   // Undo Functionality
@@ -476,7 +539,7 @@ export const ScoreBoard: React.FC<ScoreBoardProps> = ({ settings, onFinishMatch,
         history: newHistory,
       };
     });
-    if (audioEnabled) playSound("point");
+    if (audioEnabled) playSound("fault");
   };
 
   // Reset current set score
@@ -492,7 +555,7 @@ export const ScoreBoard: React.FC<ScoreBoardProps> = ({ settings, onFinishMatch,
           history: nextHistory,
         };
       });
-      if (audioEnabled) playSound("point");
+      if (audioEnabled) playSound("whistle");
     }
   };
 
@@ -505,7 +568,7 @@ export const ScoreBoard: React.FC<ScoreBoardProps> = ({ settings, onFinishMatch,
         rightTeam: prev.courtSides.rightTeam === "A" ? "B" : "A",
       },
     }));
-    if (audioEnabled) playSound("point");
+    if (audioEnabled) playSound("switch");
   };
 
   // Finish match / Save results
@@ -521,6 +584,11 @@ export const ScoreBoard: React.FC<ScoreBoardProps> = ({ settings, onFinishMatch,
     } else {
       // In case they finish early, whoever has higher points in active set
       finalWinner = state.currentScoreA >= state.currentScoreB ? "A" : "B";
+    }
+
+    if (audioEnabled) {
+      playSound("buzzer");
+      setTimeout(() => playSound("clapping"), 600);
     }
 
     // Include the current unfinished set if it has scores and match is forced-finished
@@ -609,16 +677,36 @@ export const ScoreBoard: React.FC<ScoreBoardProps> = ({ settings, onFinishMatch,
           </div>
         </div>
 
-        {/* Timer & Play/Pause Controls */}
-        <div className="flex items-center gap-3">
-          {/* Audio Toggles */}
-          <div className="flex bg-slate-950/80 rounded-xl p-1 border border-slate-800">
+        {/* Timer & Play/Pause Controls & Audio Suite */}
+        <div className="flex flex-wrap items-center gap-2.5">
+          {/* Instant Manual Score Announcer Button */}
+          <button
+            onClick={triggerManualScoreAnnouncement}
+            className={`relative flex items-center gap-1.5 px-3 py-1.5 rounded-xl border text-xs font-mono font-bold transition-all cursor-pointer ${
+              isAnnouncingAnim
+                ? "bg-violet-600 text-white border-violet-400 ring-2 ring-violet-500/40 shadow-lg shadow-violet-500/20 scale-105"
+                : "bg-slate-950/80 text-violet-300 hover:text-white border-violet-500/30 hover:border-violet-500/60 hover:bg-violet-950/30"
+            }`}
+            title="Umumkan skor saat ini menggunakan suara bahasa Indonesia"
+          >
+            <Megaphone className={`w-3.5 h-3.5 ${isAnnouncingAnim ? "animate-bounce" : "text-violet-400"}`} />
+            <span>PANGGIL SKOR</span>
+            {isAnnouncingAnim && (
+              <span className="flex h-2 w-2 relative">
+                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-violet-400 opacity-75"></span>
+                <span className="relative inline-flex rounded-full h-2 w-2 bg-violet-300"></span>
+              </span>
+            )}
+          </button>
+
+          {/* Audio Toggles & Quick Settings */}
+          <div className="flex bg-slate-950/80 rounded-xl p-1 border border-slate-800 items-center">
             <button
               onClick={() => setAudioEnabled(!audioEnabled)}
               className={`p-1.5 rounded-lg transition-colors cursor-pointer ${
-                audioEnabled ? "text-violet-400 bg-slate-800" : "text-slate-500 hover:text-slate-300"
+                audioEnabled ? "text-emerald-400 bg-slate-800" : "text-slate-500 hover:text-slate-300"
               }`}
-              title={audioEnabled ? "Efek suara aktif" : "Efek suara senyap"}
+              title={audioEnabled ? "Efek suara lapangan aktif (klik untuk senyap)" : "Efek suara senyap (klik untuk aktif)"}
             >
               {audioEnabled ? <Volume2 className="w-4 h-4" /> : <VolumeX className="w-4 h-4" />}
             </button>
@@ -627,14 +715,21 @@ export const ScoreBoard: React.FC<ScoreBoardProps> = ({ settings, onFinishMatch,
               className={`p-1.5 rounded-lg transition-colors cursor-pointer ${
                 speechEnabled ? "text-violet-400 bg-slate-800" : "text-slate-500 hover:text-slate-300"
               }`}
-              title={speechEnabled ? "Pengumuman suara aktif" : "Pengumuman suara senyap"}
+              title={speechEnabled ? "Pengumuman suara TTS aktif (klik untuk senyap)" : "Pengumuman suara senyap (klik untuk aktif)"}
             >
               {speechEnabled ? <Mic className="w-4 h-4" /> : <MicOff className="w-4 h-4" />}
+            </button>
+            <button
+              onClick={() => setIsAudioModalOpen(true)}
+              className="p-1.5 rounded-lg text-slate-400 hover:text-white hover:bg-slate-800 transition-colors cursor-pointer border-l border-slate-800/80 ml-0.5 pl-2"
+              title="Buka Pengaturan Efek Suara & Pengumuman Bahasa Indonesia"
+            >
+              <Sliders className="w-4 h-4" />
             </button>
           </div>
 
           {/* Time Keeper */}
-          <div className="bg-slate-950/80 rounded-xl border border-slate-800/80 px-4 py-1.5 text-center font-mono flex items-center gap-2">
+          <div className="bg-slate-950/80 rounded-xl border border-slate-800/80 px-3.5 py-1.5 text-center font-mono flex items-center gap-2">
             <span className="text-xs font-semibold text-slate-400">DURASI:</span>
             <span className="text-sm font-bold text-white tracking-wider">
               {formatTimer(state.durationSeconds)}
@@ -642,6 +737,7 @@ export const ScoreBoard: React.FC<ScoreBoardProps> = ({ settings, onFinishMatch,
             <button
               onClick={() => setIsTimerRunning(!isTimerRunning)}
               className="ml-1 p-1 rounded hover:bg-slate-800 text-slate-400 hover:text-white transition-colors cursor-pointer"
+              title={isTimerRunning ? "Jeda Waktu" : "Mulai Waktu"}
             >
               {isTimerRunning ? <Pause className="w-3.5 h-3.5" /> : <Play className="w-3.5 h-3.5 fill-current" />}
             </button>
@@ -1422,6 +1518,251 @@ export const ScoreBoard: React.FC<ScoreBoardProps> = ({ settings, onFinishMatch,
                 className="px-4 py-2 rounded-xl text-xs font-bold font-mono bg-gradient-to-r from-violet-600 to-indigo-600 hover:from-violet-500 hover:to-indigo-500 text-white shadow-md shadow-indigo-500/10 cursor-pointer"
               >
                 Simpan Nama
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* AUDIO & VOICE SETTINGS MODAL */}
+      {isAudioModalOpen && (
+        <div className="fixed inset-0 bg-slate-950/80 backdrop-blur-sm flex items-center justify-center z-50 p-4 animate-fadeIn">
+          <div className="bg-slate-900 border border-slate-800 rounded-3xl w-full max-w-lg overflow-hidden shadow-2xl flex flex-col max-h-[85vh]">
+            {/* Header */}
+            <div className="flex items-center justify-between p-4 px-5 border-b border-slate-800 bg-slate-950/40">
+              <div className="flex items-center gap-2.5">
+                <div className="p-2 rounded-xl bg-violet-500/10 border border-violet-500/20 text-violet-400">
+                  <Sliders className="w-4 h-4" />
+                </div>
+                <div>
+                  <h3 className="font-bold text-white text-sm">Pengaturan Audio & Suara Wasit</h3>
+                  <p className="text-[11px] text-slate-400 font-mono">Efek suara Web Audio & pengumuman TTS Bahasa Indonesia</p>
+                </div>
+              </div>
+              <button
+                onClick={() => setIsAudioModalOpen(false)}
+                className="text-slate-400 hover:text-white p-1.5 rounded-xl hover:bg-slate-800 transition-all cursor-pointer"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+
+            {/* Modal Body */}
+            <div className="p-5 space-y-5 overflow-y-auto">
+              {/* Volume Master Slider */}
+              <div className="bg-slate-950/60 p-4 rounded-2xl border border-slate-800/80 space-y-3">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <Volume2 className="w-4 h-4 text-violet-400" />
+                    <span className="text-xs font-bold text-white font-mono uppercase">Volume Utama</span>
+                  </div>
+                  <span className="text-xs font-mono font-bold text-violet-400 bg-violet-500/10 px-2 py-0.5 rounded-lg border border-violet-500/20">
+                    {Math.round(masterVolume * 100)}%
+                  </span>
+                </div>
+                <div className="flex items-center gap-3">
+                  <button
+                    type="button"
+                    onClick={() => handleVolumeChange(masterVolume > 0 ? 0 : 0.8)}
+                    className="text-slate-400 hover:text-white p-1 rounded transition-colors cursor-pointer"
+                  >
+                    {masterVolume === 0 ? <VolumeX className="w-4 h-4 text-red-400" /> : <Volume2 className="w-4 h-4 text-slate-300" />}
+                  </button>
+                  <input
+                    type="range"
+                    min="0"
+                    max="1"
+                    step="0.05"
+                    value={masterVolume}
+                    onChange={(e) => handleVolumeChange(parseFloat(e.target.value))}
+                    className="w-full accent-violet-500 cursor-pointer h-2 bg-slate-800 rounded-lg appearance-none"
+                  />
+                </div>
+              </div>
+
+              {/* TTS Indonesian Announcement Section */}
+              <div className="bg-slate-950/60 p-4 rounded-2xl border border-slate-800/80 space-y-3.5">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <Mic className="w-4 h-4 text-emerald-400" />
+                    <div>
+                      <h4 className="text-xs font-bold text-white font-mono uppercase">Pengumuman Suara (TTS Bahasa Indonesia)</h4>
+                      <p className="text-[10px] text-slate-400">Menyebutkan skor, giliran servis, dan jus otomatis</p>
+                    </div>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => setSpeechEnabled(!speechEnabled)}
+                    className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors cursor-pointer ${
+                      speechEnabled ? "bg-violet-600" : "bg-slate-800"
+                    }`}
+                  >
+                    <span
+                      className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
+                        speechEnabled ? "translate-x-6" : "translate-x-1"
+                      }`}
+                    />
+                  </button>
+                </div>
+
+                {/* Speech Speed Selector */}
+                <div className="space-y-1.5 pt-1">
+                  <label className="text-[10px] font-bold text-slate-400 font-mono uppercase">Kecepatan Bicara Wasit</label>
+                  <div className="grid grid-cols-3 gap-2">
+                    {[
+                      { label: "0.8x Santai", val: 0.8 },
+                      { label: "1.0x Normal", val: 1.0 },
+                      { label: "1.2x Cepat", val: 1.2 },
+                    ].map((item) => (
+                      <button
+                        key={`speed-${item.val}`}
+                        type="button"
+                        onClick={() => handleSpeechSpeedChange(item.val)}
+                        className={`py-1.5 px-2 rounded-xl text-xs font-mono font-semibold border transition-all cursor-pointer ${
+                          speechSpeed === item.val
+                            ? "bg-violet-500/20 text-violet-300 border-violet-500/40"
+                            : "bg-slate-900 text-slate-400 border-slate-800 hover:text-white"
+                        }`}
+                      >
+                        {item.label}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Indonesian Voice Test Buttons */}
+                <div className="space-y-1.5 pt-1">
+                  <label className="text-[10px] font-bold text-slate-400 font-mono uppercase">Uji Pengumuman Suara Bahasa Indonesia</label>
+                  <div className="grid grid-cols-2 gap-2">
+                    <button
+                      type="button"
+                      onClick={() => speakCustomText("Pindah servis. Skor lima, tiga. Servis oleh Budi.")}
+                      className="flex items-center justify-center gap-1.5 py-2 px-2.5 rounded-xl bg-slate-900 hover:bg-slate-800 border border-slate-800 hover:border-slate-700 text-[11px] font-mono text-slate-200 transition-all cursor-pointer"
+                    >
+                      <Megaphone className="w-3 h-3 text-emerald-400" />
+                      <span>Uji Poin Biasa</span>
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => speakCustomText("Jus! Deuce! Skor dua puluh sama. Servis oleh Siti.")}
+                      className="flex items-center justify-center gap-1.5 py-2 px-2.5 rounded-xl bg-slate-900 hover:bg-slate-800 border border-slate-800 hover:border-slate-700 text-[11px] font-mono text-slate-200 transition-all cursor-pointer"
+                    >
+                      <Zap className="w-3 h-3 text-amber-400" />
+                      <span>Uji Panggilan Jus</span>
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => speakCustomText("Game point untuk Tim Garuda! Skor dua puluh, sembilan belas.")}
+                      className="flex items-center justify-center gap-1.5 py-2 px-2.5 rounded-xl bg-slate-900 hover:bg-slate-800 border border-slate-800 hover:border-slate-700 text-[11px] font-mono text-slate-200 transition-all cursor-pointer"
+                    >
+                      <Flame className="w-3 h-3 text-red-400" />
+                      <span>Uji Game Point</span>
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => speakCustomText("Pertandingan selesai! Selamat kepada Tim Rajawali keluar sebagai juara!")}
+                      className="flex items-center justify-center gap-1.5 py-2 px-2.5 rounded-xl bg-slate-900 hover:bg-slate-800 border border-slate-800 hover:border-slate-700 text-[11px] font-mono text-slate-200 transition-all cursor-pointer"
+                    >
+                      <Trophy className="w-3 h-3 text-yellow-400" />
+                      <span>Uji Juara</span>
+                    </button>
+                  </div>
+                </div>
+              </div>
+
+              {/* Sound Effects Section */}
+              <div className="bg-slate-950/60 p-4 rounded-2xl border border-slate-800/80 space-y-3">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <Volume2 className="w-4 h-4 text-cyan-400" />
+                    <div>
+                      <h4 className="text-xs font-bold text-white font-mono uppercase">Efek Suara Lapangan (SFX)</h4>
+                      <p className="text-[10px] text-slate-400">Peluit, bel point, tepuk tangan, dan buzzer arena</p>
+                    </div>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => setAudioEnabled(!audioEnabled)}
+                    className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors cursor-pointer ${
+                      audioEnabled ? "bg-emerald-600" : "bg-slate-800"
+                    }`}
+                  >
+                    <span
+                      className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
+                        audioEnabled ? "translate-x-6" : "translate-x-1"
+                      }`}
+                    />
+                  </button>
+                </div>
+
+                {/* SFX Tester Buttons */}
+                <div className="space-y-1.5 pt-1">
+                  <label className="text-[10px] font-bold text-slate-400 font-mono uppercase">Uji Coba Efek Suara</label>
+                  <div className="grid grid-cols-3 gap-2">
+                    <button
+                      type="button"
+                      onClick={() => playSound("whistle")}
+                      className="py-1.5 px-2 rounded-xl bg-slate-900 hover:bg-slate-800 border border-slate-800 text-[11px] font-mono text-slate-300 transition-all cursor-pointer"
+                    >
+                      🏸 Peluit
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => playSound("special")}
+                      className="py-1.5 px-2 rounded-xl bg-slate-900 hover:bg-slate-800 border border-slate-800 text-[11px] font-mono text-slate-300 transition-all cursor-pointer"
+                    >
+                      🔔 Bel Game
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => playSound("deuce")}
+                      className="py-1.5 px-2 rounded-xl bg-slate-900 hover:bg-slate-800 border border-slate-800 text-[11px] font-mono text-slate-300 transition-all cursor-pointer"
+                    >
+                      ⚡ Jus Tone
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => playSound("clapping")}
+                      className="py-1.5 px-2 rounded-xl bg-slate-900 hover:bg-slate-800 border border-slate-800 text-[11px] font-mono text-slate-300 transition-all cursor-pointer"
+                    >
+                      👏 Tepuk Tangan
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => playSound("buzzer")}
+                      className="py-1.5 px-2 rounded-xl bg-slate-900 hover:bg-slate-800 border border-slate-800 text-[11px] font-mono text-slate-300 transition-all cursor-pointer"
+                    >
+                      🚨 Buzzer
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => playSound("switch")}
+                      className="py-1.5 px-2 rounded-xl bg-slate-900 hover:bg-slate-800 border border-slate-800 text-[11px] font-mono text-slate-300 transition-all cursor-pointer"
+                    >
+                      🔄 Pindah Sisi
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Footer Buttons */}
+            <div className="p-4 bg-slate-950/60 border-t border-slate-800 flex items-center justify-between">
+              <button
+                type="button"
+                onClick={triggerManualScoreAnnouncement}
+                className="flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-xs font-bold font-mono bg-violet-600/20 text-violet-300 hover:bg-violet-600/30 border border-violet-500/30 transition-all cursor-pointer"
+              >
+                <Megaphone className="w-3.5 h-3.5" />
+                <span>Panggil Skor Saat Ini</span>
+              </button>
+
+              <button
+                type="button"
+                onClick={() => setIsAudioModalOpen(false)}
+                className="px-5 py-2 rounded-xl text-xs font-bold font-mono bg-gradient-to-r from-violet-600 to-indigo-600 hover:from-violet-500 hover:to-indigo-500 text-white shadow-md shadow-indigo-500/10 cursor-pointer"
+              >
+                Tutup & Terapkan
               </button>
             </div>
           </div>
