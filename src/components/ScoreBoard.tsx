@@ -155,6 +155,7 @@ export const ScoreBoard: React.FC<ScoreBoardProps> = ({ settings, onFinishMatch,
     isMatchOver: boolean;
     countdown: number;
   } | null>(null);
+  const [newSetIntro, setNewSetIntro] = useState<number | null>(null);
 
   // Instant Manual TTS Announcement
   const triggerManualScoreAnnouncement = () => {
@@ -286,6 +287,11 @@ export const ScoreBoard: React.FC<ScoreBoardProps> = ({ settings, onFinishMatch,
       } else {
         const nextSetIndex = prev.currentSetIndex + 1;
         if (audioEnabled) playSound("special");
+
+        setNewSetIntro(nextSetIndex + 1);
+        setTimeout(() => {
+          setNewSetIntro(null);
+        }, 3000);
 
         // Swap court sides on set transition (pindah lapangan)
         const nextCourtSides = {
@@ -648,8 +654,32 @@ export const ScoreBoard: React.FC<ScoreBoardProps> = ({ settings, onFinishMatch,
 
   return (
     <div id="live-scoreboard-play-panel" className="space-y-6">
+      {/* Dynamic Animated Toast for New Set Start */}
+      <AnimatePresence>
+        {newSetIntro && (
+          <motion.div
+            initial={{ opacity: 0, y: -30, scale: 0.9 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            exit={{ opacity: 0, y: -20, scale: 0.95 }}
+            transition={{ type: "spring", stiffness: 450, damping: 25 }}
+            className="fixed top-6 left-1/2 -translate-x-1/2 z-50 px-6 py-3.5 rounded-2xl bg-gradient-to-r from-violet-600 via-indigo-600 to-cyan-600 text-white shadow-2xl border border-white/30 flex items-center gap-3.5 backdrop-blur-md"
+          >
+            <div className="w-8 h-8 rounded-full bg-white text-indigo-700 flex items-center justify-center font-black font-mono shadow">
+              {newSetIntro}
+            </div>
+            <div>
+              <div className="font-extrabold text-sm tracking-wide">SET {newSetIntro} RESMI DIMULAI!</div>
+              <div className="text-[11px] text-indigo-100 flex items-center gap-1.5 font-medium">
+                <ArrowLeftRight className="w-3.5 h-3.5" />
+                <span>Pindah Lapangan • Pemenang set sebelumnya servis pertama</span>
+              </div>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
       {/* Top Header Controls */}
-      <div className="flex flex-col sm:flex-row items-center justify-between gap-4 bg-slate-900/40 rounded-2xl border border-slate-800 p-4 backdrop-blur-sm shadow-xl">
+      <div className="flex flex-col sm:flex-row items-center justify-between gap-4 bg-white/80 dark:bg-slate-900/40 rounded-2xl border border-slate-200 dark:border-slate-800 p-4 backdrop-blur-sm shadow-md dark:shadow-xl">
         {/* Navigation & Info */}
         <div className="flex items-center gap-3">
           <button
@@ -658,7 +688,7 @@ export const ScoreBoard: React.FC<ScoreBoardProps> = ({ settings, onFinishMatch,
                 onExit();
               }
             }}
-            className="flex items-center gap-1 py-2 px-3 rounded-xl bg-slate-950/60 text-slate-300 hover:text-white border border-slate-800 hover:border-slate-700 transition-all cursor-pointer font-mono text-xs font-bold"
+            className="flex items-center gap-1 py-2 px-3 rounded-xl bg-slate-100 dark:bg-slate-950/60 text-slate-700 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white border border-slate-200 dark:border-slate-800 hover:border-slate-300 dark:hover:border-slate-700 transition-all cursor-pointer font-mono text-xs font-bold"
             title="Keluar ke Menu Utama"
           >
             <ChevronLeft className="w-4 h-4" />
@@ -666,12 +696,12 @@ export const ScoreBoard: React.FC<ScoreBoardProps> = ({ settings, onFinishMatch,
           </button>
           <div>
             <div className="flex items-center gap-2">
-              <h2 className="text-sm font-bold text-white tracking-tight">PERTANDINGAN AKTIF</h2>
-              <span className="px-2 py-0.5 rounded-full text-[9px] font-bold bg-violet-500/10 text-violet-400 border border-violet-500/20 uppercase font-mono">
+              <h2 className="text-sm font-bold text-slate-900 dark:text-white tracking-tight">PERTANDINGAN AKTIF</h2>
+              <span className="px-2 py-0.5 rounded-full text-[9px] font-bold bg-violet-500/10 text-violet-700 dark:text-violet-400 border border-violet-200 dark:border-violet-500/20 uppercase font-mono">
                 {settings.sport === SportType.BADMINTON ? "Bulu Tangkis" : "Tenis Meja"}
               </span>
             </div>
-            <p className="text-[11px] text-slate-400 font-mono mt-0.5">
+            <p className="text-[11px] text-slate-500 dark:text-slate-400 font-mono mt-0.5">
               Target: {settings.targetPoints} Poin • {isDoubles ? "Ganda" : "Tunggal"} • {isTableTennis ? `Best of ${settings.bestOfSets} (Menang ${targetSetsToWin} Set)` : settings.bestOfSets === 1 ? "1 Set" : `Best of ${settings.bestOfSets} (Menang ${targetSetsToWin} Set)`}
             </p>
           </div>
@@ -685,11 +715,11 @@ export const ScoreBoard: React.FC<ScoreBoardProps> = ({ settings, onFinishMatch,
             className={`relative flex items-center gap-1.5 px-3 py-1.5 rounded-xl border text-xs font-mono font-bold transition-all cursor-pointer ${
               isAnnouncingAnim
                 ? "bg-violet-600 text-white border-violet-400 ring-2 ring-violet-500/40 shadow-lg shadow-violet-500/20 scale-105"
-                : "bg-slate-950/80 text-violet-300 hover:text-white border-violet-500/30 hover:border-violet-500/60 hover:bg-violet-950/30"
+                : "bg-slate-100 dark:bg-slate-950/80 text-violet-700 dark:text-violet-300 hover:text-violet-900 dark:hover:text-white border-violet-300 dark:border-violet-500/30 hover:border-violet-400 dark:hover:border-violet-500/60 hover:bg-violet-50 dark:hover:bg-violet-950/30"
             }`}
             title="Umumkan skor saat ini menggunakan suara bahasa Indonesia"
           >
-            <Megaphone className={`w-3.5 h-3.5 ${isAnnouncingAnim ? "animate-bounce" : "text-violet-400"}`} />
+            <Megaphone className={`w-3.5 h-3.5 ${isAnnouncingAnim ? "animate-bounce" : "text-violet-600 dark:text-violet-400"}`} />
             <span>PANGGIL SKOR</span>
             {isAnnouncingAnim && (
               <span className="flex h-2 w-2 relative">
@@ -700,11 +730,11 @@ export const ScoreBoard: React.FC<ScoreBoardProps> = ({ settings, onFinishMatch,
           </button>
 
           {/* Audio Toggles & Quick Settings */}
-          <div className="flex bg-slate-950/80 rounded-xl p-1 border border-slate-800 items-center">
+          <div className="flex bg-slate-100 dark:bg-slate-950/80 rounded-xl p-1 border border-slate-200 dark:border-slate-800 items-center">
             <button
               onClick={() => setAudioEnabled(!audioEnabled)}
               className={`p-1.5 rounded-lg transition-colors cursor-pointer ${
-                audioEnabled ? "text-emerald-400 bg-slate-800" : "text-slate-500 hover:text-slate-300"
+                audioEnabled ? "text-emerald-700 dark:text-emerald-400 bg-white dark:bg-slate-800 shadow-sm dark:shadow-none" : "text-slate-400 hover:text-slate-700 dark:hover:text-slate-300"
               }`}
               title={audioEnabled ? "Efek suara lapangan aktif (klik untuk senyap)" : "Efek suara senyap (klik untuk aktif)"}
             >
@@ -713,7 +743,7 @@ export const ScoreBoard: React.FC<ScoreBoardProps> = ({ settings, onFinishMatch,
             <button
               onClick={() => setSpeechEnabled(!speechEnabled)}
               className={`p-1.5 rounded-lg transition-colors cursor-pointer ${
-                speechEnabled ? "text-violet-400 bg-slate-800" : "text-slate-500 hover:text-slate-300"
+                speechEnabled ? "text-violet-700 dark:text-violet-400 bg-white dark:bg-slate-800 shadow-sm dark:shadow-none" : "text-slate-400 hover:text-slate-700 dark:hover:text-slate-300"
               }`}
               title={speechEnabled ? "Pengumuman suara TTS aktif (klik untuk senyap)" : "Pengumuman suara senyap (klik untuk aktif)"}
             >
@@ -721,7 +751,7 @@ export const ScoreBoard: React.FC<ScoreBoardProps> = ({ settings, onFinishMatch,
             </button>
             <button
               onClick={() => setIsAudioModalOpen(true)}
-              className="p-1.5 rounded-lg text-slate-400 hover:text-white hover:bg-slate-800 transition-colors cursor-pointer border-l border-slate-800/80 ml-0.5 pl-2"
+              className="p-1.5 rounded-lg text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-white dark:hover:bg-slate-800 transition-colors cursor-pointer border-l border-slate-200 dark:border-slate-800/80 ml-0.5 pl-2"
               title="Buka Pengaturan Efek Suara & Pengumuman Bahasa Indonesia"
             >
               <Sliders className="w-4 h-4" />
@@ -729,14 +759,14 @@ export const ScoreBoard: React.FC<ScoreBoardProps> = ({ settings, onFinishMatch,
           </div>
 
           {/* Time Keeper */}
-          <div className="bg-slate-950/80 rounded-xl border border-slate-800/80 px-3.5 py-1.5 text-center font-mono flex items-center gap-2">
-            <span className="text-xs font-semibold text-slate-400">DURASI:</span>
-            <span className="text-sm font-bold text-white tracking-wider">
+          <div className="bg-slate-100 dark:bg-slate-950/80 rounded-xl border border-slate-200 dark:border-slate-800/80 px-3.5 py-1.5 text-center font-mono flex items-center gap-2">
+            <span className="text-xs font-semibold text-slate-500 dark:text-slate-400">DURASI:</span>
+            <span className="text-sm font-bold text-slate-900 dark:text-white tracking-wider">
               {formatTimer(state.durationSeconds)}
             </span>
             <button
               onClick={() => setIsTimerRunning(!isTimerRunning)}
-              className="ml-1 p-1 rounded hover:bg-slate-800 text-slate-400 hover:text-white transition-colors cursor-pointer"
+              className="ml-1 p-1 rounded hover:bg-slate-200 dark:hover:bg-slate-800 text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white transition-colors cursor-pointer"
               title={isTimerRunning ? "Jeda Waktu" : "Mulai Waktu"}
             >
               {isTimerRunning ? <Pause className="w-3.5 h-3.5" /> : <Play className="w-3.5 h-3.5 fill-current" />}
@@ -747,15 +777,15 @@ export const ScoreBoard: React.FC<ScoreBoardProps> = ({ settings, onFinishMatch,
 
       {/* Set Result History Bar */}
       {state.setScores.length > 0 && (
-        <div className="bg-slate-950/40 border border-slate-800 p-3 rounded-2xl flex items-center justify-center gap-3 text-xs">
-          <span className="text-[10px] font-bold text-slate-400 font-mono uppercase tracking-wider">Skor Set Sebelumnya:</span>
+        <div className="bg-white/80 dark:bg-slate-950/40 border border-slate-200 dark:border-slate-800 p-3 rounded-2xl flex items-center justify-center gap-3 text-xs shadow-sm dark:shadow-none">
+          <span className="text-[10px] font-bold text-slate-500 dark:text-slate-400 font-mono uppercase tracking-wider">Skor Set Sebelumnya:</span>
           <div className="flex gap-2">
             {state.setScores.map((set, idx) => (
               <span
                 key={`set-badge-${idx}`}
-                className="px-2.5 py-1 rounded-lg bg-slate-900 border border-slate-800 font-mono font-bold text-slate-300"
+                className="px-2.5 py-1 rounded-lg bg-slate-100 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 font-mono font-bold text-slate-700 dark:text-slate-300"
               >
-                Set {idx + 1}: <strong className="text-white">{set.scoreA}-{set.scoreB}</strong>
+                Set {idx + 1}: <strong className="text-slate-900 dark:text-white">{set.scoreA}-{set.scoreB}</strong>
               </span>
             ))}
           </div>
@@ -771,7 +801,7 @@ export const ScoreBoard: React.FC<ScoreBoardProps> = ({ settings, onFinishMatch,
             animate={{ opacity: 1, scale: 1, y: 0, filter: "blur(0px)" }}
             exit={{ opacity: 0, scale: 0.94, y: 20, filter: "blur(4px)" }}
             transition={{ type: "spring", stiffness: 380, damping: 26 }}
-            className="bg-gradient-to-br from-slate-900/95 via-indigo-950/80 to-slate-900/95 border-2 border-amber-400/60 p-6 md:p-8 rounded-3xl text-center shadow-2xl flex flex-col items-center justify-center gap-3 relative overflow-hidden backdrop-blur-xl"
+            className="bg-white/95 dark:bg-gradient-to-br dark:from-slate-900/95 dark:via-indigo-950/80 dark:to-slate-900/95 border-2 border-amber-400/70 p-6 md:p-8 rounded-3xl text-center shadow-2xl flex flex-col items-center justify-center gap-3 relative overflow-hidden backdrop-blur-xl"
           >
             {/* Animated radiant glow background */}
             <motion.div
@@ -824,11 +854,11 @@ export const ScoreBoard: React.FC<ScoreBoardProps> = ({ settings, onFinishMatch,
               initial={{ scale: 0.8, y: -10 }}
               animate={{ scale: 1, y: 0 }}
               transition={{ type: "spring", stiffness: 500, damping: 20, delay: 0.05 }}
-              className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-gradient-to-r from-amber-500/20 via-orange-500/20 to-amber-500/20 border border-amber-400/40 text-amber-300 text-xs font-black tracking-widest uppercase shadow-lg relative z-10"
+              className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-gradient-to-r from-amber-500/20 via-orange-500/20 to-amber-500/20 border border-amber-400/40 text-amber-600 dark:text-amber-300 text-xs font-black tracking-widest uppercase shadow-md relative z-10"
             >
-              <Sparkles className="w-4 h-4 text-amber-400 animate-spin" />
+              <Sparkles className="w-4 h-4 text-amber-500 dark:text-amber-400 animate-spin" />
               <span>SET {state.currentSetIndex + 1} SELESAI</span>
-              <Sparkles className="w-4 h-4 text-amber-400 animate-spin" />
+              <Sparkles className="w-4 h-4 text-amber-500 dark:text-amber-400 animate-spin" />
             </motion.div>
 
             {/* Winner Announcement */}
@@ -837,7 +867,7 @@ export const ScoreBoard: React.FC<ScoreBoardProps> = ({ settings, onFinishMatch,
                 initial={{ scale: 0.9, opacity: 0 }}
                 animate={{ scale: 1, opacity: 1 }}
                 transition={{ delay: 0.1 }}
-                className="text-base md:text-lg font-medium text-slate-200"
+                className="text-base md:text-lg font-medium text-slate-700 dark:text-slate-200"
               >
                 Pemenang Set Ini:
               </motion.div>
@@ -846,7 +876,7 @@ export const ScoreBoard: React.FC<ScoreBoardProps> = ({ settings, onFinishMatch,
                 animate={{ scale: 1, y: 0 }}
                 transition={{ type: "spring", stiffness: 400, damping: 18, delay: 0.15 }}
                 className={`text-2xl md:text-3xl font-black tracking-tight ${
-                  pendingTransition.winner === "A" ? "text-amber-400" : "text-cyan-400"
+                  pendingTransition.winner === "A" ? "text-amber-600 dark:text-amber-400" : "text-cyan-600 dark:text-cyan-400"
                 }`}
               >
                 🏆 {pendingTransition.winner === "A" ? teamANameLabel : teamBNameLabel}
@@ -858,15 +888,15 @@ export const ScoreBoard: React.FC<ScoreBoardProps> = ({ settings, onFinishMatch,
               initial={{ scale: 0.8, opacity: 0 }}
               animate={{ scale: 1, opacity: 1 }}
               transition={{ delay: 0.2 }}
-              className="inline-flex items-center gap-3 px-5 py-2 rounded-2xl bg-slate-950/90 border border-slate-700/80 shadow-inner relative z-10"
+              className="inline-flex items-center gap-3 px-5 py-2 rounded-2xl bg-slate-100 dark:bg-slate-950/90 border border-slate-200 dark:border-slate-700/80 shadow-inner relative z-10"
             >
-              <span className="text-xs font-mono font-bold text-slate-400 uppercase tracking-wider">Skor Akhir Set:</span>
-              <span className="text-xl md:text-2xl font-black font-mono text-white tracking-widest">
-                <strong className={pendingTransition.winner === "A" ? "text-amber-400" : "text-white"}>
+              <span className="text-xs font-mono font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Skor Akhir Set:</span>
+              <span className="text-xl md:text-2xl font-black font-mono text-slate-900 dark:text-white tracking-widest">
+                <strong className={pendingTransition.winner === "A" ? "text-amber-600 dark:text-amber-400" : "text-slate-900 dark:text-white"}>
                   {pendingTransition.scoreA}
                 </strong>
                 {" - "}
-                <strong className={pendingTransition.winner === "B" ? "text-cyan-400" : "text-white"}>
+                <strong className={pendingTransition.winner === "B" ? "text-cyan-600 dark:text-cyan-400" : "text-slate-900 dark:text-white"}>
                   {pendingTransition.scoreB}
                 </strong>
               </span>
@@ -878,13 +908,13 @@ export const ScoreBoard: React.FC<ScoreBoardProps> = ({ settings, onFinishMatch,
                 initial={{ opacity: 0, y: 6 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.25 }}
-                className="flex items-center justify-center gap-2 text-xs font-semibold text-violet-300 bg-violet-950/40 border border-violet-800/50 px-4 py-1.5 rounded-xl relative z-10"
+                className="flex items-center justify-center gap-2 text-xs font-semibold text-violet-700 dark:text-violet-300 bg-violet-50 dark:bg-violet-950/40 border border-violet-200 dark:border-violet-800/50 px-4 py-1.5 rounded-xl relative z-10"
               >
                 <motion.div
                   animate={{ rotate: [0, 180, 360], scale: [1, 1.2, 1] }}
                   transition={{ duration: 2.5, repeat: Infinity, ease: "easeInOut" }}
                 >
-                  <ArrowLeftRight className="w-3.5 h-3.5 text-violet-400" />
+                  <ArrowLeftRight className="w-3.5 h-3.5 text-violet-600 dark:text-violet-400" />
                 </motion.div>
                 <span>Pemain berpindah sisi lapangan untuk set berikutnya</span>
               </motion.div>
@@ -892,14 +922,14 @@ export const ScoreBoard: React.FC<ScoreBoardProps> = ({ settings, onFinishMatch,
 
             {/* Countdown & Action Skip */}
             <div className="flex flex-col sm:flex-row items-center gap-3 mt-2 relative z-10">
-              <div className="flex items-center gap-2 text-xs text-slate-300 font-bold uppercase">
+              <div className="flex items-center gap-2 text-xs text-slate-700 dark:text-slate-300 font-bold uppercase">
                 <span>{pendingTransition.isMatchOver ? "Menyiapkan hasil pertandingan" : "Memulai set berikutnya dalam"}</span>
                 <motion.span
                   key={pendingTransition.countdown}
                   initial={{ scale: 1.4, rotate: -10 }}
                   animate={{ scale: 1, rotate: 0 }}
                   transition={{ type: "spring", stiffness: 500, damping: 15 }}
-                  className="w-8 h-8 rounded-full bg-gradient-to-br from-amber-400 to-orange-500 text-slate-950 flex items-center justify-center font-black text-sm shadow-lg shadow-amber-500/40"
+                  className="w-8 h-8 rounded-full bg-gradient-to-br from-amber-400 to-orange-500 text-slate-950 flex items-center justify-center font-black text-sm shadow-md shadow-amber-500/40"
                 >
                   {pendingTransition.countdown}
                 </motion.span>
@@ -911,7 +941,7 @@ export const ScoreBoard: React.FC<ScoreBoardProps> = ({ settings, onFinishMatch,
                 whileHover={{ scale: 1.05 }}
                 whileTap={{ scale: 0.95 }}
                 onClick={commitSetTransition}
-                className="px-4 py-1.5 rounded-xl bg-slate-800/90 hover:bg-slate-700 text-amber-400 hover:text-amber-300 border border-amber-500/30 text-xs font-bold font-mono flex items-center gap-1.5 shadow-md cursor-pointer transition-all"
+                className="px-4 py-1.5 rounded-xl bg-slate-100 dark:bg-slate-800/90 hover:bg-slate-200 dark:hover:bg-slate-700 text-amber-700 dark:text-amber-400 hover:text-amber-800 dark:hover:text-amber-300 border border-amber-300 dark:border-amber-500/30 text-xs font-bold font-mono flex items-center gap-1.5 shadow-sm dark:shadow-md cursor-pointer transition-all"
                 title="Lewati jeda dan mulai langsung"
               >
                 <FastForward className="w-3.5 h-3.5" />
@@ -920,7 +950,7 @@ export const ScoreBoard: React.FC<ScoreBoardProps> = ({ settings, onFinishMatch,
             </div>
 
             {/* Progress bar */}
-            <div className="w-full max-w-sm bg-slate-950 h-2 rounded-full mt-1 overflow-hidden border border-slate-800 relative z-10">
+            <div className="w-full max-w-sm bg-slate-200 dark:bg-slate-950 h-2 rounded-full mt-1 overflow-hidden border border-slate-300 dark:border-slate-800 relative z-10">
               <motion.div
                 initial={{ width: "100%" }}
                 animate={{ width: "0%" }}
@@ -941,7 +971,7 @@ export const ScoreBoard: React.FC<ScoreBoardProps> = ({ settings, onFinishMatch,
             animate={{ opacity: 1, scale: 1, y: 0, filter: "blur(0px)" }}
             exit={{ opacity: 0, scale: 0.92, filter: "blur(6px)" }}
             transition={{ type: "spring", stiffness: 350, damping: 24 }}
-            className="bg-gradient-to-br from-slate-900/95 via-indigo-950/90 to-slate-900/95 rounded-3xl border-2 border-amber-400/40 p-8 text-center shadow-2xl relative overflow-hidden space-y-6 backdrop-blur-xl"
+            className="bg-white/95 dark:bg-gradient-to-br dark:from-slate-900/95 dark:via-indigo-950/90 dark:to-slate-900/95 rounded-3xl border-2 border-amber-400/50 p-8 text-center shadow-2xl relative overflow-hidden space-y-6 backdrop-blur-xl"
           >
             {/* Top glowing rainbow border */}
             <div className="absolute top-0 left-0 right-0 h-1.5 bg-gradient-to-r from-amber-400 via-violet-500 to-cyan-400 shadow-lg shadow-amber-500/50"></div>
@@ -1020,18 +1050,18 @@ export const ScoreBoard: React.FC<ScoreBoardProps> = ({ settings, onFinishMatch,
                 initial={{ opacity: 0, y: 10 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.2 }}
-                className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-amber-400/15 border border-amber-400/30 text-amber-300 text-xs font-mono font-bold uppercase tracking-widest"
+                className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-amber-500/15 border border-amber-400/30 text-amber-600 dark:text-amber-300 text-xs font-mono font-bold uppercase tracking-widest"
               >
-                <Crown className="w-4 h-4 text-amber-400" />
+                <Crown className="w-4 h-4 text-amber-500 dark:text-amber-400" />
                 <span>JUARA PERTANDINGAN</span>
-                <Crown className="w-4 h-4 text-amber-400" />
+                <Crown className="w-4 h-4 text-amber-500 dark:text-amber-400" />
               </motion.div>
 
               <motion.h2
                 initial={{ opacity: 0, scale: 0.9 }}
                 animate={{ opacity: 1, scale: 1 }}
                 transition={{ type: "spring", stiffness: 350, damping: 20, delay: 0.25 }}
-                className="text-3xl md:text-4xl font-extrabold text-white tracking-tight"
+                className="text-3xl md:text-4xl font-extrabold text-slate-900 dark:text-white tracking-tight"
               >
                 PERTANDINGAN SELESAI!
               </motion.h2>
@@ -1040,10 +1070,10 @@ export const ScoreBoard: React.FC<ScoreBoardProps> = ({ settings, onFinishMatch,
                 initial={{ opacity: 0, y: 8 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.3 }}
-                className="text-lg md:text-xl text-slate-200"
+                className="text-lg md:text-xl text-slate-700 dark:text-slate-200"
               >
                 Pemenang:{" "}
-                <strong className="text-amber-400 text-xl md:text-2xl font-black drop-shadow">
+                <strong className="text-amber-600 dark:text-amber-400 text-xl md:text-2xl font-black drop-shadow">
                   {state.setScores.filter((s) => s.winner === "A").length > state.setScores.filter((s) => s.winner === "B").length
                     ? `${teamANameLabel} (${nameA})`
                     : `${teamBNameLabel} (${nameB})`}
@@ -1056,10 +1086,10 @@ export const ScoreBoard: React.FC<ScoreBoardProps> = ({ settings, onFinishMatch,
               initial={{ opacity: 0, y: 15 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.35 }}
-              className="bg-slate-950/80 max-w-md mx-auto p-5 rounded-2xl border border-slate-800/90 shadow-xl space-y-3 relative z-10"
+              className="bg-slate-50 dark:bg-slate-950/80 max-w-md mx-auto p-5 rounded-2xl border border-slate-200 dark:border-slate-800/90 shadow-xl space-y-3 relative z-10"
             >
-              <div className="flex items-center justify-between pb-2 border-b border-slate-800">
-                <span className="text-[11px] font-mono font-bold text-slate-400 uppercase tracking-widest">
+              <div className="flex items-center justify-between pb-2 border-b border-slate-200 dark:border-slate-800">
+                <span className="text-[11px] font-mono font-bold text-slate-500 dark:text-slate-400 uppercase tracking-widest">
                   Ringkasan Kemenangan Set
                 </span>
                 <span className="text-[11px] font-mono text-slate-500 font-bold">
@@ -1068,45 +1098,45 @@ export const ScoreBoard: React.FC<ScoreBoardProps> = ({ settings, onFinishMatch,
               </div>
 
               {/* Team A Row */}
-              <div className="flex items-center justify-between text-sm text-slate-200 py-1">
+              <div className="flex items-center justify-between text-sm text-slate-800 dark:text-slate-200 py-1">
                 <div className="flex items-center gap-2">
                   <span className="w-2.5 h-2.5 rounded-full bg-amber-400"></span>
                   <span className="font-bold">{teamANameLabel}</span>
                   <span className="text-slate-500 text-xs">({nameA})</span>
                 </div>
                 <div className="flex items-center gap-2">
-                  <span className="font-mono font-black text-amber-400 text-base">{totalSetsWonA} Set</span>
+                  <span className="font-mono font-black text-amber-600 dark:text-amber-400 text-base">{totalSetsWonA} Set</span>
                   {totalSetsWonA > totalSetsWonB && (
-                    <Award className="w-4 h-4 text-amber-400 fill-amber-400/20" />
+                    <Award className="w-4 h-4 text-amber-500 dark:text-amber-400 fill-amber-400/20" />
                   )}
                 </div>
               </div>
 
               {/* Team B Row */}
-              <div className="flex items-center justify-between text-sm text-slate-200 py-1 border-t border-slate-900">
+              <div className="flex items-center justify-between text-sm text-slate-800 dark:text-slate-200 py-1 border-t border-slate-200 dark:border-slate-900">
                 <div className="flex items-center gap-2">
                   <span className="w-2.5 h-2.5 rounded-full bg-cyan-400"></span>
                   <span className="font-bold">{teamBNameLabel}</span>
                   <span className="text-slate-500 text-xs">({nameB})</span>
                 </div>
                 <div className="flex items-center gap-2">
-                  <span className="font-mono font-black text-cyan-400 text-base">{totalSetsWonB} Set</span>
+                  <span className="font-mono font-black text-cyan-600 dark:text-cyan-400 text-base">{totalSetsWonB} Set</span>
                   {totalSetsWonB > totalSetsWonA && (
-                    <Award className="w-4 h-4 text-cyan-400 fill-cyan-400/20" />
+                    <Award className="w-4 h-4 text-cyan-500 dark:text-cyan-400 fill-cyan-400/20" />
                   )}
                 </div>
               </div>
 
               {/* Set by set details pills */}
               {state.setScores.length > 0 && (
-                <div className="pt-2 border-t border-slate-800/80 flex flex-wrap items-center justify-center gap-2">
+                <div className="pt-2 border-t border-slate-200 dark:border-slate-800/80 flex flex-wrap items-center justify-center gap-2">
                   {state.setScores.map((set, idx) => (
                     <span
                       key={`final-set-${idx}`}
                       className={`px-2.5 py-1 rounded-lg text-xs font-mono font-bold border ${
                         set.winner === "A"
-                          ? "bg-amber-500/10 border-amber-500/30 text-amber-300"
-                          : "bg-cyan-500/10 border-cyan-500/30 text-cyan-300"
+                          ? "bg-amber-500/10 border-amber-500/30 text-amber-700 dark:text-amber-300"
+                          : "bg-cyan-500/10 border-cyan-500/30 text-cyan-700 dark:text-cyan-300"
                       }`}
                     >
                       Set {idx + 1}: <strong>{set.scoreA}-{set.scoreB}</strong>
@@ -1136,7 +1166,7 @@ export const ScoreBoard: React.FC<ScoreBoardProps> = ({ settings, onFinishMatch,
                 whileHover={{ scale: 1.03 }}
                 whileTap={{ scale: 0.97 }}
                 onClick={onExit}
-                className="px-6 py-3.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 hover:text-white font-bold text-sm font-mono border border-slate-700 cursor-pointer transition-all"
+                className="px-6 py-3.5 rounded-xl bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-800 dark:text-slate-200 hover:text-slate-950 dark:hover:text-white font-bold text-sm font-mono border border-slate-200 dark:border-slate-700 cursor-pointer transition-all"
               >
                 KEMBALI KE MENU
               </motion.button>
@@ -1144,15 +1174,20 @@ export const ScoreBoard: React.FC<ScoreBoardProps> = ({ settings, onFinishMatch,
           </motion.div>
         ) : (
         /* ACTIVE SCORING SCOREBOARD */
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          
-          {/* LEFT TEAM SCORECARD */}
+        <motion.div
+          key={`set-cards-${state.currentSetIndex}-${state.courtSides.leftTeam}`}
+          initial={{ opacity: 0, scale: 0.95, y: 20 }}
+          animate={{ opacity: 1, scale: 1, y: 0 }}
+          exit={{ opacity: 0, scale: 0.95, y: -20 }}
+          transition={{ duration: 0.35, ease: "easeOut" }}
+          className="grid grid-cols-1 md:grid-cols-2 gap-6"
+        >
           {/* LEFT TEAM SCORECARD */}
           <div className="relative group">
             {/* Clickable Area to Add Point */}
             <div
               onClick={() => addPoint(leftTeamKey)}
-              className="bg-slate-900/60 rounded-3xl border-2 border-slate-800 hover:border-slate-700/80 p-8 text-center flex flex-col justify-between h-[26rem] md:h-[30rem] shadow-lg cursor-pointer hover:bg-slate-900/80 transition-all select-none relative overflow-hidden active:scale-[0.99]"
+              className="bg-white/90 dark:bg-slate-900/60 rounded-3xl border-2 border-slate-200 dark:border-slate-800 hover:border-slate-300 dark:hover:border-slate-700/80 p-8 text-center flex flex-col justify-between h-[26rem] md:h-[30rem] shadow-lg hover:shadow-xl dark:shadow-none hover:bg-slate-50/80 dark:hover:bg-slate-900/80 transition-all select-none relative overflow-hidden active:scale-[0.99] cursor-pointer"
             >
               {/* Highlight background glow */}
               <div className={`absolute top-0 left-0 right-0 h-1.5 ${leftTeamKey === "A" ? "bg-amber-400" : "bg-cyan-400"}`}></div>
@@ -1166,29 +1201,29 @@ export const ScoreBoard: React.FC<ScoreBoardProps> = ({ settings, onFinishMatch,
               )}
 
               {/* Set counter display */}
-              <div className="absolute top-3 right-4 px-3 py-1.5 rounded-xl bg-slate-950/80 border border-slate-800 text-xs font-black tracking-wider text-slate-200 shadow flex items-center gap-2">
-                <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">SET MENANG:</span>
-                <span className={`text-xl font-black font-sans ${leftTeamKey === "A" ? "text-amber-400" : "text-cyan-400"}`}>
-                  {leftSetsWon} <span className="text-xs font-bold text-slate-500 font-mono">/ {targetSetsToWin}</span>
+              <div className="absolute top-3 right-4 px-3 py-1.5 rounded-xl bg-slate-100 dark:bg-slate-950/80 border border-slate-200 dark:border-slate-800 text-xs font-black tracking-wider text-slate-700 dark:text-slate-200 shadow-sm flex items-center gap-2">
+                <span className="text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-widest">SET MENANG:</span>
+                <span className={`text-xl font-black font-sans ${leftTeamKey === "A" ? "text-amber-600 dark:text-amber-400" : "text-cyan-600 dark:text-cyan-400"}`}>
+                  {leftSetsWon} <span className="text-xs font-bold text-slate-400 dark:text-slate-500 font-mono">/ {targetSetsToWin}</span>
                 </span>
               </div>
 
               {/* Team Name */}
               <div className="pt-6 flex flex-col items-center justify-center relative">
                 <div className="flex items-center gap-1.5 px-6 max-w-full">
-                  <h3 className="text-3xl md:text-4xl font-extrabold text-white truncate leading-tight tracking-tight">{leftTeamTitle}</h3>
+                  <h3 className="text-3xl md:text-4xl font-extrabold text-slate-900 dark:text-white truncate leading-tight tracking-tight">{leftTeamTitle}</h3>
                   <button
                     onClick={(e) => {
                       e.stopPropagation();
                       openEditModal();
                     }}
-                    className="p-1.5 rounded-lg bg-slate-950/40 hover:bg-slate-800 text-slate-300 hover:text-white border border-slate-800/40 transition-colors cursor-pointer shrink-0"
+                    className="p-1.5 rounded-lg bg-slate-100 dark:bg-slate-950/40 hover:bg-slate-200 dark:hover:bg-slate-800 text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white border border-slate-200 dark:border-slate-800/40 transition-colors cursor-pointer shrink-0"
                     title="Edit Nama"
                   >
                     <Pencil className="w-3.5 h-3.5" />
                   </button>
                 </div>
-                <span className={`text-3xl md:text-4xl font-bold uppercase tracking-tight mt-2 truncate max-w-full px-6 ${leftTeamKey === "A" ? "text-amber-400" : "text-cyan-400"}`}>
+                <span className={`text-3xl md:text-4xl font-bold uppercase tracking-tight mt-2 truncate max-w-full px-6 ${leftTeamKey === "A" ? "text-amber-600 dark:text-amber-400" : "text-cyan-600 dark:text-cyan-400"}`}>
                   {leftTeamSub}
                 </span>
               </div>
@@ -1200,15 +1235,15 @@ export const ScoreBoard: React.FC<ScoreBoardProps> = ({ settings, onFinishMatch,
                   initial={{ scale: 0.8, y: 15, filter: "blur(4px)" }}
                   animate={{ scale: 1, y: 0, filter: "blur(0px)" }}
                   transition={{ type: "spring", stiffness: 450, damping: 15 }}
-                  className="text-[16rem] md:text-[20rem] font-black font-['Arial'] text-white tracking-tighter block select-none leading-none"
+                  className="text-[16rem] md:text-[20rem] font-black font-['Arial'] text-slate-900 dark:text-white tracking-tighter block select-none leading-none"
                 >
                   {leftScore}
                 </motion.span>
               </div>
 
               {/* Hint */}
-              <div className="text-[11px] text-slate-500 font-mono tracking-wide uppercase flex items-center justify-center gap-1">
-                <Plus className="w-3 h-3 text-slate-500" /> TAP UNTUK MENAMBAH POIN
+              <div className="text-[11px] text-slate-400 dark:text-slate-500 font-mono tracking-wide uppercase flex items-center justify-center gap-1">
+                <Plus className="w-3 h-3 text-slate-400 dark:text-slate-500" /> TAP UNTUK MENAMBAH POIN
               </div>
             </div>
 
@@ -1221,8 +1256,8 @@ export const ScoreBoard: React.FC<ScoreBoardProps> = ({ settings, onFinishMatch,
               disabled={leftScore === 0}
               className={`absolute bottom-3 right-3 p-2 rounded-xl border transition-all flex items-center justify-center gap-1 font-mono text-[10px] font-bold z-10 cursor-pointer ${
                 leftScore > 0
-                  ? "bg-slate-950 hover:bg-red-500/10 text-red-400 border-slate-800 hover:border-red-500/20"
-                  : "bg-slate-950/20 text-slate-700 border-transparent cursor-not-allowed"
+                  ? "bg-white dark:bg-slate-950 hover:bg-red-50 dark:hover:bg-red-500/10 text-red-600 dark:text-red-400 border-slate-200 dark:border-slate-800 hover:border-red-200 dark:hover:border-red-500/20 shadow-sm"
+                  : "bg-slate-100/60 dark:bg-slate-950/20 text-slate-400 dark:text-slate-700 border-transparent cursor-not-allowed"
               }`}
               title="Kurangi 1 Poin"
             >
@@ -1236,7 +1271,7 @@ export const ScoreBoard: React.FC<ScoreBoardProps> = ({ settings, onFinishMatch,
             {/* Clickable Area to Add Point */}
             <div
               onClick={() => addPoint(rightTeamKey)}
-              className="bg-slate-900/60 rounded-3xl border-2 border-slate-800 hover:border-slate-700/80 p-8 text-center flex flex-col justify-between h-[26rem] md:h-[30rem] shadow-lg cursor-pointer hover:bg-slate-900/80 transition-all select-none relative overflow-hidden active:scale-[0.99]"
+              className="bg-white/90 dark:bg-slate-900/60 rounded-3xl border-2 border-slate-200 dark:border-slate-800 hover:border-slate-300 dark:hover:border-slate-700/80 p-8 text-center flex flex-col justify-between h-[26rem] md:h-[30rem] shadow-lg hover:shadow-xl dark:shadow-none hover:bg-slate-50/80 dark:hover:bg-slate-900/80 transition-all select-none relative overflow-hidden active:scale-[0.99] cursor-pointer"
             >
               {/* Highlight background glow */}
               <div className={`absolute top-0 left-0 right-0 h-1.5 ${rightTeamKey === "A" ? "bg-amber-400" : "bg-cyan-400"}`}></div>
@@ -1250,29 +1285,29 @@ export const ScoreBoard: React.FC<ScoreBoardProps> = ({ settings, onFinishMatch,
               )}
 
               {/* Set counter display */}
-              <div className="absolute top-3 right-4 px-3 py-1.5 rounded-xl bg-slate-950/80 border border-slate-800 text-xs font-black tracking-wider text-slate-200 shadow flex items-center gap-2">
-                <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">SET MENANG:</span>
-                <span className={`text-xl font-black font-sans ${rightTeamKey === "A" ? "text-amber-400" : "text-cyan-400"}`}>
-                  {rightSetsWon} <span className="text-xs font-bold text-slate-500 font-mono">/ {targetSetsToWin}</span>
+              <div className="absolute top-3 right-4 px-3 py-1.5 rounded-xl bg-slate-100 dark:bg-slate-950/80 border border-slate-200 dark:border-slate-800 text-xs font-black tracking-wider text-slate-700 dark:text-slate-200 shadow-sm flex items-center gap-2">
+                <span className="text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-widest">SET MENANG:</span>
+                <span className={`text-xl font-black font-sans ${rightTeamKey === "A" ? "text-amber-600 dark:text-amber-400" : "text-cyan-600 dark:text-cyan-400"}`}>
+                  {rightSetsWon} <span className="text-xs font-bold text-slate-400 dark:text-slate-500 font-mono">/ {targetSetsToWin}</span>
                 </span>
               </div>
 
               {/* Team Name */}
               <div className="pt-6 flex flex-col items-center justify-center relative">
                 <div className="flex items-center gap-1.5 px-6 max-w-full">
-                  <h3 className="text-3xl md:text-4xl font-extrabold text-white truncate leading-tight tracking-tight">{rightTeamTitle}</h3>
+                  <h3 className="text-3xl md:text-4xl font-extrabold text-slate-900 dark:text-white truncate leading-tight tracking-tight">{rightTeamTitle}</h3>
                   <button
                     onClick={(e) => {
                       e.stopPropagation();
                       openEditModal();
                     }}
-                    className="p-1.5 rounded-lg bg-slate-950/40 hover:bg-slate-800 text-slate-300 hover:text-white border border-slate-800/40 transition-colors cursor-pointer shrink-0"
+                    className="p-1.5 rounded-lg bg-slate-100 dark:bg-slate-950/40 hover:bg-slate-200 dark:hover:bg-slate-800 text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white border border-slate-200 dark:border-slate-800/40 transition-colors cursor-pointer shrink-0"
                     title="Edit Nama"
                   >
                     <Pencil className="w-3.5 h-3.5" />
                   </button>
                 </div>
-                <span className={`text-3xl md:text-4xl font-bold uppercase tracking-tight mt-2 truncate max-w-full px-6 ${rightTeamKey === "A" ? "text-amber-400" : "text-cyan-400"}`}>
+                <span className={`text-3xl md:text-4xl font-bold uppercase tracking-tight mt-2 truncate max-w-full px-6 ${rightTeamKey === "A" ? "text-amber-600 dark:text-amber-400" : "text-cyan-600 dark:text-cyan-400"}`}>
                   {rightTeamSub}
                 </span>
               </div>
@@ -1284,15 +1319,15 @@ export const ScoreBoard: React.FC<ScoreBoardProps> = ({ settings, onFinishMatch,
                   initial={{ scale: 0.8, y: 15, filter: "blur(4px)" }}
                   animate={{ scale: 1, y: 0, filter: "blur(0px)" }}
                   transition={{ type: "spring", stiffness: 450, damping: 15 }}
-                  className="text-[16rem] md:text-[20rem] font-black font-['Arial'] text-white tracking-tighter block select-none leading-none"
+                  className="text-[16rem] md:text-[20rem] font-black font-['Arial'] text-slate-900 dark:text-white tracking-tighter block select-none leading-none"
                 >
                   {rightScore}
                 </motion.span>
               </div>
 
               {/* Hint */}
-              <div className="text-[11px] text-slate-500 font-mono tracking-wide uppercase flex items-center justify-center gap-1">
-                <Plus className="w-3 h-3 text-slate-500" /> TAP UNTUK MENAMBAH POIN
+              <div className="text-[11px] text-slate-400 dark:text-slate-500 font-mono tracking-wide uppercase flex items-center justify-center gap-1">
+                <Plus className="w-3 h-3 text-slate-400 dark:text-slate-500" /> TAP UNTUK MENAMBAH POIN
               </div>
             </div>
 
@@ -1305,8 +1340,8 @@ export const ScoreBoard: React.FC<ScoreBoardProps> = ({ settings, onFinishMatch,
               disabled={rightScore === 0}
               className={`absolute bottom-3 right-3 p-2 rounded-xl border transition-all flex items-center justify-center gap-1 font-mono text-[10px] font-bold z-10 cursor-pointer ${
                 rightScore > 0
-                  ? "bg-slate-950 hover:bg-red-500/10 text-red-400 border-slate-800 hover:border-red-500/20"
-                  : "bg-slate-950/20 text-slate-700 border-transparent cursor-not-allowed"
+                  ? "bg-white dark:bg-slate-950 hover:bg-red-50 dark:hover:bg-red-500/10 text-red-600 dark:text-red-400 border-slate-200 dark:border-slate-800 hover:border-red-200 dark:hover:border-red-500/20 shadow-sm"
+                  : "bg-slate-100/60 dark:bg-slate-950/20 text-slate-400 dark:text-slate-700 border-transparent cursor-not-allowed"
               }`}
               title="Kurangi 1 Poin"
             >
@@ -1314,16 +1349,15 @@ export const ScoreBoard: React.FC<ScoreBoardProps> = ({ settings, onFinishMatch,
               POIN -1
             </button>
           </div>
-
-        </div>
+        </motion.div>
       )}
       </AnimatePresence>
 
       {/* MID-CONTROL ACTION BAR */}
       {!state.isMatchOver && (
-        <div className="flex flex-wrap items-center justify-center gap-3 bg-slate-950/60 p-3 rounded-2xl border border-slate-800">
+        <div className="flex flex-wrap items-center justify-center gap-3 bg-white/80 dark:bg-slate-950/60 p-3 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm">
           {/* Set Tracker Label */}
-          <div className="px-4 py-1.5 rounded-xl bg-slate-900 border border-slate-800/80 font-mono text-xs font-bold text-white mr-auto">
+          <div className="px-4 py-1.5 rounded-xl bg-slate-100 dark:bg-slate-900 border border-slate-200 dark:border-slate-800/80 font-mono text-xs font-bold text-slate-800 dark:text-white mr-auto">
             🏁 {getSetLabel()}
           </div>
 
@@ -1332,7 +1366,7 @@ export const ScoreBoard: React.FC<ScoreBoardProps> = ({ settings, onFinishMatch,
             {/* Edit Names */}
             <button
               onClick={openEditModal}
-              className="flex items-center gap-1 px-3 py-2 rounded-xl text-xs font-semibold font-mono bg-slate-900 hover:bg-slate-800 text-slate-200 border border-slate-800 transition-all cursor-pointer"
+              className="flex items-center gap-1 px-3 py-2 rounded-xl text-xs font-semibold font-mono bg-slate-100 dark:bg-slate-900 hover:bg-slate-200 dark:hover:bg-slate-800 text-slate-700 dark:text-slate-200 border border-slate-200 dark:border-slate-800 transition-all cursor-pointer shadow-sm dark:shadow-none"
               title="Edit nama tim dan nama pemain"
             >
               <Pencil className="w-3.5 h-3.5" />
@@ -1345,8 +1379,8 @@ export const ScoreBoard: React.FC<ScoreBoardProps> = ({ settings, onFinishMatch,
               disabled={state.history.length === 0}
               className={`flex items-center gap-1 px-3 py-2 rounded-xl text-xs font-semibold font-mono border transition-all cursor-pointer ${
                 state.history.length > 0
-                  ? "bg-slate-900 hover:bg-slate-800 text-slate-200 border-slate-800"
-                  : "bg-slate-900/40 text-slate-600 border-transparent cursor-not-allowed"
+                  ? "bg-slate-100 dark:bg-slate-900 hover:bg-slate-200 dark:hover:bg-slate-800 text-slate-700 dark:text-slate-200 border-slate-200 dark:border-slate-800 shadow-sm dark:shadow-none"
+                  : "bg-slate-100/50 dark:bg-slate-900/40 text-slate-400 dark:text-slate-600 border-transparent cursor-not-allowed"
               }`}
               title="Batalkan poin terakhir"
             >
@@ -1357,7 +1391,7 @@ export const ScoreBoard: React.FC<ScoreBoardProps> = ({ settings, onFinishMatch,
             {/* Switch sides */}
             <button
               onClick={triggerSideSwitch}
-              className="flex items-center gap-1 px-3 py-2 rounded-xl text-xs font-semibold font-mono bg-slate-900 hover:bg-slate-800 text-slate-200 border border-slate-800 transition-all cursor-pointer"
+              className="flex items-center gap-1 px-3 py-2 rounded-xl text-xs font-semibold font-mono bg-slate-100 dark:bg-slate-900 hover:bg-slate-200 dark:hover:bg-slate-800 text-slate-700 dark:text-slate-200 border border-slate-200 dark:border-slate-800 transition-all cursor-pointer shadow-sm dark:shadow-none"
               title="Pindah sisi lapangan kiri/kanan di layar"
             >
               <ArrowLeftRight className="w-3.5 h-3.5" />
@@ -1367,7 +1401,7 @@ export const ScoreBoard: React.FC<ScoreBoardProps> = ({ settings, onFinishMatch,
             {/* Reset */}
             <button
               onClick={triggerReset}
-              className="flex items-center gap-1 px-3 py-2 rounded-xl text-xs font-semibold font-mono bg-slate-900 hover:bg-red-500/10 text-red-400 border border-slate-800 hover:border-red-500/20 transition-all cursor-pointer"
+              className="flex items-center gap-1 px-3 py-2 rounded-xl text-xs font-semibold font-mono bg-slate-100 dark:bg-slate-900 hover:bg-red-50 dark:hover:bg-red-500/10 text-red-600 dark:text-red-400 border border-slate-200 dark:border-slate-800 hover:border-red-200 dark:hover:border-red-500/20 transition-all cursor-pointer shadow-sm dark:shadow-none"
               title="Setel ulang skor game ini"
             >
               <RotateCcw className="w-3.5 h-3.5" />
@@ -1406,17 +1440,17 @@ export const ScoreBoard: React.FC<ScoreBoardProps> = ({ settings, onFinishMatch,
 
       {/* EDIT NAMES OVERLAY MODAL */}
       {isEditModalOpen && (
-        <div className="fixed inset-0 bg-slate-950/80 backdrop-blur-sm flex items-center justify-center z-50 p-4 animate-fadeIn">
-          <div className="bg-slate-900 border border-slate-800 rounded-2xl w-full max-w-md overflow-hidden shadow-2xl flex flex-col">
+        <div className="fixed inset-0 bg-slate-950/70 backdrop-blur-sm flex items-center justify-center z-50 p-4 animate-fadeIn">
+          <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl w-full max-w-md overflow-hidden shadow-2xl flex flex-col">
             {/* Header */}
-            <div className="flex items-center justify-between p-4 border-b border-slate-800">
+            <div className="flex items-center justify-between p-4 border-b border-slate-200 dark:border-slate-800">
               <div className="flex items-center gap-2">
-                <Pencil className="w-4 h-4 text-violet-400" />
-                <h3 className="font-bold text-white text-sm">Edit Nama Pemain / Tim</h3>
+                <Pencil className="w-4 h-4 text-violet-600 dark:text-violet-400" />
+                <h3 className="font-bold text-slate-900 dark:text-white text-sm">Edit Nama Pemain / Tim</h3>
               </div>
               <button
                 onClick={() => setIsEditModalOpen(false)}
-                className="text-slate-400 hover:text-white p-1 rounded-lg hover:bg-slate-800 transition-all cursor-pointer"
+                className="text-slate-400 hover:text-slate-700 dark:hover:text-white p-1 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 transition-all cursor-pointer"
               >
                 <X className="w-4 h-4" />
               </button>
@@ -1426,36 +1460,36 @@ export const ScoreBoard: React.FC<ScoreBoardProps> = ({ settings, onFinishMatch,
             <div className="p-4 space-y-4 max-h-[70vh] overflow-y-auto">
               {/* Team A names */}
               <div className="space-y-2.5">
-                <h4 className="text-[11px] font-bold text-amber-400 font-mono uppercase tracking-wider">Tim / Pemain A</h4>
+                <h4 className="text-[11px] font-bold text-amber-600 dark:text-amber-400 font-mono uppercase tracking-wider">Tim / Pemain A</h4>
                 <div className="space-y-2">
                   <div>
-                    <label className="text-[10px] text-slate-400 font-mono block mb-1">Nama Tim A</label>
+                    <label className="text-[10px] text-slate-500 dark:text-slate-400 font-mono block mb-1">Nama Tim A</label>
                     <input
                       type="text"
                       value={tempTeamAName}
                       onChange={(e) => setTempTeamAName(e.target.value)}
-                      className="w-full bg-slate-950 border border-slate-800 focus:border-slate-700 rounded-xl px-3 py-2 text-xs text-white outline-none"
+                      className="w-full bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 focus:border-violet-500 rounded-xl px-3 py-2 text-xs text-slate-900 dark:text-white outline-none"
                       placeholder="Nama Tim A"
                     />
                   </div>
                   <div>
-                    <label className="text-[10px] text-slate-400 font-mono block mb-1">Pemain A1 {isDoubles && "(Servis Awal)"}</label>
+                    <label className="text-[10px] text-slate-500 dark:text-slate-400 font-mono block mb-1">Pemain A1 {isDoubles && "(Servis Awal)"}</label>
                     <input
                       type="text"
                       value={tempPlayerA1}
                       onChange={(e) => setTempPlayerA1(e.target.value)}
-                      className="w-full bg-slate-950 border border-slate-800 focus:border-slate-700 rounded-xl px-3 py-2 text-xs text-white outline-none"
+                      className="w-full bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 focus:border-violet-500 rounded-xl px-3 py-2 text-xs text-slate-900 dark:text-white outline-none"
                       placeholder="Nama Pemain A1"
                     />
                   </div>
                   {isDoubles && (
                     <div>
-                      <label className="text-[10px] text-slate-400 font-mono block mb-1">Pemain A2</label>
+                      <label className="text-[10px] text-slate-500 dark:text-slate-400 font-mono block mb-1">Pemain A2</label>
                       <input
                         type="text"
                         value={tempPlayerA2}
                         onChange={(e) => setTempPlayerA2(e.target.value)}
-                        className="w-full bg-slate-950 border border-slate-800 focus:border-slate-700 rounded-xl px-3 py-2 text-xs text-white outline-none"
+                        className="w-full bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 focus:border-violet-500 rounded-xl px-3 py-2 text-xs text-slate-900 dark:text-white outline-none"
                         placeholder="Nama Pemain A2"
                       />
                     </div>
@@ -1465,36 +1499,36 @@ export const ScoreBoard: React.FC<ScoreBoardProps> = ({ settings, onFinishMatch,
 
               {/* Team B names */}
               <div className="space-y-2.5">
-                <h4 className="text-[11px] font-bold text-cyan-400 font-mono uppercase tracking-wider">Tim / Pemain B</h4>
+                <h4 className="text-[11px] font-bold text-cyan-600 dark:text-cyan-400 font-mono uppercase tracking-wider">Tim / Pemain B</h4>
                 <div className="space-y-2">
                   <div>
-                    <label className="text-[10px] text-slate-400 font-mono block mb-1">Nama Tim B</label>
+                    <label className="text-[10px] text-slate-500 dark:text-slate-400 font-mono block mb-1">Nama Tim B</label>
                     <input
                       type="text"
                       value={tempTeamBName}
                       onChange={(e) => setTempTeamBName(e.target.value)}
-                      className="w-full bg-slate-950 border border-slate-800 focus:border-slate-700 rounded-xl px-3 py-2 text-xs text-white outline-none"
+                      className="w-full bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 focus:border-violet-500 rounded-xl px-3 py-2 text-xs text-slate-900 dark:text-white outline-none"
                       placeholder="Nama Tim B"
                     />
                   </div>
                   <div>
-                    <label className="text-[10px] text-slate-400 font-mono block mb-1">Pemain B1 {isDoubles && "(Penerima Awal)"}</label>
+                    <label className="text-[10px] text-slate-500 dark:text-slate-400 font-mono block mb-1">Pemain B1 {isDoubles && "(Penerima Awal)"}</label>
                     <input
                       type="text"
                       value={tempPlayerB1}
                       onChange={(e) => setTempPlayerB1(e.target.value)}
-                      className="w-full bg-slate-950 border border-slate-800 focus:border-slate-700 rounded-xl px-3 py-2 text-xs text-white outline-none"
+                      className="w-full bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 focus:border-violet-500 rounded-xl px-3 py-2 text-xs text-slate-900 dark:text-white outline-none"
                       placeholder="Nama Pemain B1"
                     />
                   </div>
                   {isDoubles && (
                     <div>
-                      <label className="text-[10px] text-slate-400 font-mono block mb-1">Pemain B2</label>
+                      <label className="text-[10px] text-slate-500 dark:text-slate-400 font-mono block mb-1">Pemain B2</label>
                       <input
                         type="text"
                         value={tempPlayerB2}
                         onChange={(e) => setTempPlayerB2(e.target.value)}
-                        className="w-full bg-slate-950 border border-slate-800 focus:border-slate-700 rounded-xl px-3 py-2 text-xs text-white outline-none"
+                        className="w-full bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 focus:border-violet-500 rounded-xl px-3 py-2 text-xs text-slate-900 dark:text-white outline-none"
                         placeholder="Nama Pemain B2"
                       />
                     </div>
@@ -1504,11 +1538,11 @@ export const ScoreBoard: React.FC<ScoreBoardProps> = ({ settings, onFinishMatch,
             </div>
 
             {/* Footer Buttons */}
-            <div className="p-4 bg-slate-950/60 border-t border-slate-800 flex items-center justify-end gap-2.5">
+            <div className="p-4 bg-slate-50 dark:bg-slate-950/60 border-t border-slate-200 dark:border-slate-800 flex items-center justify-end gap-2.5">
               <button
                 type="button"
                 onClick={() => setIsEditModalOpen(false)}
-                className="px-4 py-2 rounded-xl text-xs font-semibold text-slate-400 hover:text-white hover:bg-slate-800 transition-all cursor-pointer"
+                className="px-4 py-2 rounded-xl text-xs font-semibold text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-200/60 dark:hover:bg-slate-800 transition-all cursor-pointer"
               >
                 Batal
               </button>
@@ -1526,22 +1560,22 @@ export const ScoreBoard: React.FC<ScoreBoardProps> = ({ settings, onFinishMatch,
 
       {/* AUDIO & VOICE SETTINGS MODAL */}
       {isAudioModalOpen && (
-        <div className="fixed inset-0 bg-slate-950/80 backdrop-blur-sm flex items-center justify-center z-50 p-4 animate-fadeIn">
-          <div className="bg-slate-900 border border-slate-800 rounded-3xl w-full max-w-lg overflow-hidden shadow-2xl flex flex-col max-h-[85vh]">
+        <div className="fixed inset-0 bg-slate-950/70 backdrop-blur-sm flex items-center justify-center z-50 p-4 animate-fadeIn">
+          <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-3xl w-full max-w-lg overflow-hidden shadow-2xl flex flex-col max-h-[85vh]">
             {/* Header */}
-            <div className="flex items-center justify-between p-4 px-5 border-b border-slate-800 bg-slate-950/40">
+            <div className="flex items-center justify-between p-4 px-5 border-b border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-950/40">
               <div className="flex items-center gap-2.5">
-                <div className="p-2 rounded-xl bg-violet-500/10 border border-violet-500/20 text-violet-400">
+                <div className="p-2 rounded-xl bg-violet-500/10 border border-violet-500/20 text-violet-600 dark:text-violet-400">
                   <Sliders className="w-4 h-4" />
                 </div>
                 <div>
-                  <h3 className="font-bold text-white text-sm">Pengaturan Audio & Suara Wasit</h3>
-                  <p className="text-[11px] text-slate-400 font-mono">Efek suara Web Audio & pengumuman TTS Bahasa Indonesia</p>
+                  <h3 className="font-bold text-slate-900 dark:text-white text-sm">Pengaturan Audio & Suara Wasit</h3>
+                  <p className="text-[11px] text-slate-500 dark:text-slate-400 font-mono">Efek suara Web Audio & pengumuman TTS Bahasa Indonesia</p>
                 </div>
               </div>
               <button
                 onClick={() => setIsAudioModalOpen(false)}
-                className="text-slate-400 hover:text-white p-1.5 rounded-xl hover:bg-slate-800 transition-all cursor-pointer"
+                className="text-slate-400 hover:text-slate-700 dark:hover:text-white p-1.5 rounded-xl hover:bg-slate-100 dark:hover:bg-slate-800 transition-all cursor-pointer"
               >
                 <X className="w-4 h-4" />
               </button>
@@ -1550,13 +1584,13 @@ export const ScoreBoard: React.FC<ScoreBoardProps> = ({ settings, onFinishMatch,
             {/* Modal Body */}
             <div className="p-5 space-y-5 overflow-y-auto">
               {/* Volume Master Slider */}
-              <div className="bg-slate-950/60 p-4 rounded-2xl border border-slate-800/80 space-y-3">
+              <div className="bg-slate-50 dark:bg-slate-950/60 p-4 rounded-2xl border border-slate-200 dark:border-slate-800/80 space-y-3">
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-2">
-                    <Volume2 className="w-4 h-4 text-violet-400" />
-                    <span className="text-xs font-bold text-white font-mono uppercase">Volume Utama</span>
+                    <Volume2 className="w-4 h-4 text-violet-600 dark:text-violet-400" />
+                    <span className="text-xs font-bold text-slate-900 dark:text-white font-mono uppercase">Volume Utama</span>
                   </div>
-                  <span className="text-xs font-mono font-bold text-violet-400 bg-violet-500/10 px-2 py-0.5 rounded-lg border border-violet-500/20">
+                  <span className="text-xs font-mono font-bold text-violet-600 dark:text-violet-400 bg-violet-500/10 px-2 py-0.5 rounded-lg border border-violet-500/20">
                     {Math.round(masterVolume * 100)}%
                   </span>
                 </div>
@@ -1564,9 +1598,9 @@ export const ScoreBoard: React.FC<ScoreBoardProps> = ({ settings, onFinishMatch,
                   <button
                     type="button"
                     onClick={() => handleVolumeChange(masterVolume > 0 ? 0 : 0.8)}
-                    className="text-slate-400 hover:text-white p-1 rounded transition-colors cursor-pointer"
+                    className="text-slate-400 hover:text-slate-700 dark:hover:text-white p-1 rounded transition-colors cursor-pointer"
                   >
-                    {masterVolume === 0 ? <VolumeX className="w-4 h-4 text-red-400" /> : <Volume2 className="w-4 h-4 text-slate-300" />}
+                    {masterVolume === 0 ? <VolumeX className="w-4 h-4 text-red-500" /> : <Volume2 className="w-4 h-4 text-slate-600 dark:text-slate-300" />}
                   </button>
                   <input
                     type="range"
@@ -1575,26 +1609,26 @@ export const ScoreBoard: React.FC<ScoreBoardProps> = ({ settings, onFinishMatch,
                     step="0.05"
                     value={masterVolume}
                     onChange={(e) => handleVolumeChange(parseFloat(e.target.value))}
-                    className="w-full accent-violet-500 cursor-pointer h-2 bg-slate-800 rounded-lg appearance-none"
+                    className="w-full accent-violet-600 cursor-pointer h-2 bg-slate-200 dark:bg-slate-800 rounded-lg appearance-none"
                   />
                 </div>
               </div>
 
               {/* TTS Indonesian Announcement Section */}
-              <div className="bg-slate-950/60 p-4 rounded-2xl border border-slate-800/80 space-y-3.5">
+              <div className="bg-slate-50 dark:bg-slate-950/60 p-4 rounded-2xl border border-slate-200 dark:border-slate-800/80 space-y-3.5">
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-2">
-                    <Mic className="w-4 h-4 text-emerald-400" />
+                    <Mic className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
                     <div>
-                      <h4 className="text-xs font-bold text-white font-mono uppercase">Pengumuman Suara (TTS Bahasa Indonesia)</h4>
-                      <p className="text-[10px] text-slate-400">Menyebutkan skor, giliran servis, dan jus otomatis</p>
+                      <h4 className="text-xs font-bold text-slate-900 dark:text-white font-mono uppercase">Pengumuman Suara (TTS Bahasa Indonesia)</h4>
+                      <p className="text-[10px] text-slate-500 dark:text-slate-400">Menyebutkan skor, giliran servis, dan jus otomatis</p>
                     </div>
                   </div>
                   <button
                     type="button"
                     onClick={() => setSpeechEnabled(!speechEnabled)}
                     className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors cursor-pointer ${
-                      speechEnabled ? "bg-violet-600" : "bg-slate-800"
+                      speechEnabled ? "bg-violet-600" : "bg-slate-300 dark:bg-slate-800"
                     }`}
                   >
                     <span
@@ -1607,7 +1641,7 @@ export const ScoreBoard: React.FC<ScoreBoardProps> = ({ settings, onFinishMatch,
 
                 {/* Speech Speed Selector */}
                 <div className="space-y-1.5 pt-1">
-                  <label className="text-[10px] font-bold text-slate-400 font-mono uppercase">Kecepatan Bicara Wasit</label>
+                  <label className="text-[10px] font-bold text-slate-500 dark:text-slate-400 font-mono uppercase">Kecepatan Bicara Wasit</label>
                   <div className="grid grid-cols-3 gap-2">
                     {[
                       { label: "0.8x Santai", val: 0.8 },
@@ -1620,8 +1654,8 @@ export const ScoreBoard: React.FC<ScoreBoardProps> = ({ settings, onFinishMatch,
                         onClick={() => handleSpeechSpeedChange(item.val)}
                         className={`py-1.5 px-2 rounded-xl text-xs font-mono font-semibold border transition-all cursor-pointer ${
                           speechSpeed === item.val
-                            ? "bg-violet-500/20 text-violet-300 border-violet-500/40"
-                            : "bg-slate-900 text-slate-400 border-slate-800 hover:text-white"
+                            ? "bg-violet-500/20 text-violet-700 dark:text-violet-300 border-violet-500/40"
+                            : "bg-white dark:bg-slate-900 text-slate-600 dark:text-slate-400 border-slate-200 dark:border-slate-800 hover:text-slate-900 dark:hover:text-white"
                         }`}
                       >
                         {item.label}
@@ -1632,38 +1666,38 @@ export const ScoreBoard: React.FC<ScoreBoardProps> = ({ settings, onFinishMatch,
 
                 {/* Indonesian Voice Test Buttons */}
                 <div className="space-y-1.5 pt-1">
-                  <label className="text-[10px] font-bold text-slate-400 font-mono uppercase">Uji Pengumuman Suara Bahasa Indonesia</label>
+                  <label className="text-[10px] font-bold text-slate-500 dark:text-slate-400 font-mono uppercase">Uji Pengumuman Suara Bahasa Indonesia</label>
                   <div className="grid grid-cols-2 gap-2">
                     <button
                       type="button"
                       onClick={() => speakCustomText("Pindah servis. Skor lima, tiga. Servis oleh Budi.")}
-                      className="flex items-center justify-center gap-1.5 py-2 px-2.5 rounded-xl bg-slate-900 hover:bg-slate-800 border border-slate-800 hover:border-slate-700 text-[11px] font-mono text-slate-200 transition-all cursor-pointer"
+                      className="flex items-center justify-center gap-1.5 py-2 px-2.5 rounded-xl bg-white dark:bg-slate-900 hover:bg-slate-100 dark:hover:bg-slate-800 border border-slate-200 dark:border-slate-800 text-[11px] font-mono text-slate-700 dark:text-slate-200 transition-all cursor-pointer shadow-sm dark:shadow-none"
                     >
-                      <Megaphone className="w-3 h-3 text-emerald-400" />
+                      <Megaphone className="w-3 h-3 text-emerald-500 dark:text-emerald-400" />
                       <span>Uji Poin Biasa</span>
                     </button>
                     <button
                       type="button"
                       onClick={() => speakCustomText("Jus! Deuce! Skor dua puluh sama. Servis oleh Siti.")}
-                      className="flex items-center justify-center gap-1.5 py-2 px-2.5 rounded-xl bg-slate-900 hover:bg-slate-800 border border-slate-800 hover:border-slate-700 text-[11px] font-mono text-slate-200 transition-all cursor-pointer"
+                      className="flex items-center justify-center gap-1.5 py-2 px-2.5 rounded-xl bg-white dark:bg-slate-900 hover:bg-slate-100 dark:hover:bg-slate-800 border border-slate-200 dark:border-slate-800 text-[11px] font-mono text-slate-700 dark:text-slate-200 transition-all cursor-pointer shadow-sm dark:shadow-none"
                     >
-                      <Zap className="w-3 h-3 text-amber-400" />
+                      <Zap className="w-3 h-3 text-amber-500 dark:text-amber-400" />
                       <span>Uji Panggilan Jus</span>
                     </button>
                     <button
                       type="button"
                       onClick={() => speakCustomText("Game point untuk Tim Garuda! Skor dua puluh, sembilan belas.")}
-                      className="flex items-center justify-center gap-1.5 py-2 px-2.5 rounded-xl bg-slate-900 hover:bg-slate-800 border border-slate-800 hover:border-slate-700 text-[11px] font-mono text-slate-200 transition-all cursor-pointer"
+                      className="flex items-center justify-center gap-1.5 py-2 px-2.5 rounded-xl bg-white dark:bg-slate-900 hover:bg-slate-100 dark:hover:bg-slate-800 border border-slate-200 dark:border-slate-800 text-[11px] font-mono text-slate-700 dark:text-slate-200 transition-all cursor-pointer shadow-sm dark:shadow-none"
                     >
-                      <Flame className="w-3 h-3 text-red-400" />
+                      <Flame className="w-3 h-3 text-red-500 dark:text-red-400" />
                       <span>Uji Game Point</span>
                     </button>
                     <button
                       type="button"
                       onClick={() => speakCustomText("Pertandingan selesai! Selamat kepada Tim Rajawali keluar sebagai juara!")}
-                      className="flex items-center justify-center gap-1.5 py-2 px-2.5 rounded-xl bg-slate-900 hover:bg-slate-800 border border-slate-800 hover:border-slate-700 text-[11px] font-mono text-slate-200 transition-all cursor-pointer"
+                      className="flex items-center justify-center gap-1.5 py-2 px-2.5 rounded-xl bg-white dark:bg-slate-900 hover:bg-slate-100 dark:hover:bg-slate-800 border border-slate-200 dark:border-slate-800 text-[11px] font-mono text-slate-700 dark:text-slate-200 transition-all cursor-pointer shadow-sm dark:shadow-none"
                     >
-                      <Trophy className="w-3 h-3 text-yellow-400" />
+                      <Trophy className="w-3 h-3 text-yellow-500 dark:text-yellow-400" />
                       <span>Uji Juara</span>
                     </button>
                   </div>
@@ -1671,20 +1705,20 @@ export const ScoreBoard: React.FC<ScoreBoardProps> = ({ settings, onFinishMatch,
               </div>
 
               {/* Sound Effects Section */}
-              <div className="bg-slate-950/60 p-4 rounded-2xl border border-slate-800/80 space-y-3">
+              <div className="bg-slate-50 dark:bg-slate-950/60 p-4 rounded-2xl border border-slate-200 dark:border-slate-800/80 space-y-3">
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-2">
-                    <Volume2 className="w-4 h-4 text-cyan-400" />
+                    <Volume2 className="w-4 h-4 text-cyan-600 dark:text-cyan-400" />
                     <div>
-                      <h4 className="text-xs font-bold text-white font-mono uppercase">Efek Suara Lapangan (SFX)</h4>
-                      <p className="text-[10px] text-slate-400">Peluit, bel point, tepuk tangan, dan buzzer arena</p>
+                      <h4 className="text-xs font-bold text-slate-900 dark:text-white font-mono uppercase">Efek Suara Lapangan (SFX)</h4>
+                      <p className="text-[10px] text-slate-500 dark:text-slate-400">Peluit, bel point, tepuk tangan, dan buzzer arena</p>
                     </div>
                   </div>
                   <button
                     type="button"
                     onClick={() => setAudioEnabled(!audioEnabled)}
                     className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors cursor-pointer ${
-                      audioEnabled ? "bg-emerald-600" : "bg-slate-800"
+                      audioEnabled ? "bg-emerald-600" : "bg-slate-300 dark:bg-slate-800"
                     }`}
                   >
                     <span
@@ -1697,47 +1731,47 @@ export const ScoreBoard: React.FC<ScoreBoardProps> = ({ settings, onFinishMatch,
 
                 {/* SFX Tester Buttons */}
                 <div className="space-y-1.5 pt-1">
-                  <label className="text-[10px] font-bold text-slate-400 font-mono uppercase">Uji Coba Efek Suara</label>
+                  <label className="text-[10px] font-bold text-slate-500 dark:text-slate-400 font-mono uppercase">Uji Coba Efek Suara</label>
                   <div className="grid grid-cols-3 gap-2">
                     <button
                       type="button"
                       onClick={() => playSound("whistle")}
-                      className="py-1.5 px-2 rounded-xl bg-slate-900 hover:bg-slate-800 border border-slate-800 text-[11px] font-mono text-slate-300 transition-all cursor-pointer"
+                      className="py-1.5 px-2 rounded-xl bg-white dark:bg-slate-900 hover:bg-slate-100 dark:hover:bg-slate-800 border border-slate-200 dark:border-slate-800 text-[11px] font-mono text-slate-700 dark:text-slate-300 transition-all cursor-pointer shadow-sm dark:shadow-none"
                     >
                       🏸 Peluit
                     </button>
                     <button
                       type="button"
                       onClick={() => playSound("special")}
-                      className="py-1.5 px-2 rounded-xl bg-slate-900 hover:bg-slate-800 border border-slate-800 text-[11px] font-mono text-slate-300 transition-all cursor-pointer"
+                      className="py-1.5 px-2 rounded-xl bg-white dark:bg-slate-900 hover:bg-slate-100 dark:hover:bg-slate-800 border border-slate-200 dark:border-slate-800 text-[11px] font-mono text-slate-700 dark:text-slate-300 transition-all cursor-pointer shadow-sm dark:shadow-none"
                     >
                       🔔 Bel Game
                     </button>
                     <button
                       type="button"
                       onClick={() => playSound("deuce")}
-                      className="py-1.5 px-2 rounded-xl bg-slate-900 hover:bg-slate-800 border border-slate-800 text-[11px] font-mono text-slate-300 transition-all cursor-pointer"
+                      className="py-1.5 px-2 rounded-xl bg-white dark:bg-slate-900 hover:bg-slate-100 dark:hover:bg-slate-800 border border-slate-200 dark:border-slate-800 text-[11px] font-mono text-slate-700 dark:text-slate-300 transition-all cursor-pointer shadow-sm dark:shadow-none"
                     >
                       ⚡ Jus Tone
                     </button>
                     <button
                       type="button"
                       onClick={() => playSound("clapping")}
-                      className="py-1.5 px-2 rounded-xl bg-slate-900 hover:bg-slate-800 border border-slate-800 text-[11px] font-mono text-slate-300 transition-all cursor-pointer"
+                      className="py-1.5 px-2 rounded-xl bg-white dark:bg-slate-900 hover:bg-slate-100 dark:hover:bg-slate-800 border border-slate-200 dark:border-slate-800 text-[11px] font-mono text-slate-700 dark:text-slate-300 transition-all cursor-pointer shadow-sm dark:shadow-none"
                     >
                       👏 Tepuk Tangan
                     </button>
                     <button
                       type="button"
                       onClick={() => playSound("buzzer")}
-                      className="py-1.5 px-2 rounded-xl bg-slate-900 hover:bg-slate-800 border border-slate-800 text-[11px] font-mono text-slate-300 transition-all cursor-pointer"
+                      className="py-1.5 px-2 rounded-xl bg-white dark:bg-slate-900 hover:bg-slate-100 dark:hover:bg-slate-800 border border-slate-200 dark:border-slate-800 text-[11px] font-mono text-slate-700 dark:text-slate-300 transition-all cursor-pointer shadow-sm dark:shadow-none"
                     >
                       🚨 Buzzer
                     </button>
                     <button
                       type="button"
                       onClick={() => playSound("switch")}
-                      className="py-1.5 px-2 rounded-xl bg-slate-900 hover:bg-slate-800 border border-slate-800 text-[11px] font-mono text-slate-300 transition-all cursor-pointer"
+                      className="py-1.5 px-2 rounded-xl bg-white dark:bg-slate-900 hover:bg-slate-100 dark:hover:bg-slate-800 border border-slate-200 dark:border-slate-800 text-[11px] font-mono text-slate-700 dark:text-slate-300 transition-all cursor-pointer shadow-sm dark:shadow-none"
                     >
                       🔄 Pindah Sisi
                     </button>
@@ -1747,11 +1781,11 @@ export const ScoreBoard: React.FC<ScoreBoardProps> = ({ settings, onFinishMatch,
             </div>
 
             {/* Footer Buttons */}
-            <div className="p-4 bg-slate-950/60 border-t border-slate-800 flex items-center justify-between">
+            <div className="p-4 bg-slate-50 dark:bg-slate-950/60 border-t border-slate-200 dark:border-slate-800 flex items-center justify-between">
               <button
                 type="button"
                 onClick={triggerManualScoreAnnouncement}
-                className="flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-xs font-bold font-mono bg-violet-600/20 text-violet-300 hover:bg-violet-600/30 border border-violet-500/30 transition-all cursor-pointer"
+                className="flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-xs font-bold font-mono bg-violet-600/15 text-violet-700 dark:text-violet-300 hover:bg-violet-600/25 border border-violet-500/30 transition-all cursor-pointer"
               >
                 <Megaphone className="w-3.5 h-3.5" />
                 <span>Panggil Skor Saat Ini</span>

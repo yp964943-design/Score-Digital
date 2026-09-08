@@ -6,35 +6,35 @@ export const RulesInfo: React.FC = () => {
   const [activeTab, setActiveTab] = useState<SportType>(SportType.BADMINTON);
 
   return (
-    <div id="rules-info-container" className="bg-slate-900/40 rounded-2xl border border-slate-800 p-6 backdrop-blur-sm shadow-xl">
+    <div id="rules-info-container" className="bg-white/80 dark:bg-slate-900/40 rounded-2xl border border-slate-200 dark:border-slate-800 p-6 backdrop-blur-sm shadow-xl dark:shadow-none">
       <div className="flex items-center gap-3 mb-6">
-        <div className="p-2.5 rounded-xl bg-violet-500/10 text-violet-400 border border-violet-500/20">
+        <div className="p-2.5 rounded-xl bg-violet-100 dark:bg-violet-500/10 text-violet-600 dark:text-violet-400 border border-violet-200 dark:border-violet-500/20">
           <BookOpen className="w-5 h-5" />
         </div>
         <div>
-          <h2 className="text-xl font-bold text-white tracking-tight">Panduan Aturan Resmi</h2>
-          <p className="text-xs text-slate-400">Aturan standar BWF (Badminton) & ITTF (Table Tennis)</p>
+          <h2 className="text-xl font-bold text-slate-900 dark:text-white tracking-tight">Panduan Aturan Resmi</h2>
+          <p className="text-xs text-slate-500 dark:text-slate-400">Aturan standar BWF (Badminton) & ITTF (Table Tennis)</p>
         </div>
       </div>
 
       {/* Tabs */}
-      <div className="flex gap-2 p-1 bg-slate-950/80 rounded-xl border border-slate-800/80 mb-6">
+      <div className="flex gap-2 p-1 bg-slate-100 dark:bg-slate-950/80 rounded-xl border border-slate-200 dark:border-slate-800/80 mb-6">
         <button
           onClick={() => setActiveTab(SportType.BADMINTON)}
-          className={`flex-1 py-2 px-4 rounded-lg font-medium text-xs transition-all ${
+          className={`flex-1 py-2 px-4 rounded-lg font-medium text-xs transition-all cursor-pointer ${
             activeTab === SportType.BADMINTON
-              ? "bg-emerald-500 text-slate-950 font-bold shadow-md shadow-emerald-500/10"
-              : "text-slate-400 hover:text-white"
+              ? "bg-emerald-500 text-white dark:text-slate-950 font-bold shadow-sm"
+              : "text-slate-600 dark:text-slate-400 hover:text-slate-950 dark:hover:text-white"
           }`}
         >
           Bulu Tangkis (Badminton)
         </button>
         <button
           onClick={() => setActiveTab(SportType.TABLE_TENNIS)}
-          className={`flex-1 py-2 px-4 rounded-lg font-medium text-xs transition-all ${
+          className={`flex-1 py-2 px-4 rounded-lg font-medium text-xs transition-all cursor-pointer ${
             activeTab === SportType.TABLE_TENNIS
-              ? "bg-blue-500 text-slate-950 font-bold shadow-md shadow-blue-500/10"
-              : "text-slate-400 hover:text-white"
+              ? "bg-blue-500 text-white dark:text-slate-950 font-bold shadow-sm"
+              : "text-slate-600 dark:text-slate-400 hover:text-slate-950 dark:hover:text-white"
           }`}
         >
           Tenis Meja (Pingpong)
@@ -45,10 +45,10 @@ export const RulesInfo: React.FC = () => {
         <div className="space-y-6 animate-fadeIn">
           {/* Badminton Rules */}
           <div>
-            <h3 className="text-sm font-semibold text-emerald-400 flex items-center gap-1.5 mb-2.5 font-mono uppercase tracking-wider">
+            <h3 className="text-sm font-semibold text-emerald-600 dark:text-emerald-400 flex items-center gap-1.5 mb-2.5 font-mono uppercase tracking-wider">
               <Award className="w-4 h-4" /> Sistem Penilaian (BWF)
             </h3>
-            <ul className="space-y-2 text-xs text-slate-300">
+            <ul className="space-y-2 text-xs text-slate-600 dark:text-slate-300">
               <li className="flex items-start gap-2">
                 <CheckCircle2 className="w-4 h-4 text-emerald-500 shrink-0 mt-0.5" />
                 <span>Satu pertandingan dimainkan dalam sistem <strong>Best of 3 (terbaik dari 3 set)</strong>, di mana pemenang ditentukan oleh tim yang meraih 2 set kemenangan terlebih dahulu.</span>
@@ -69,10 +69,10 @@ export const RulesInfo: React.FC = () => {
           </div>
 
           <div>
-            <h3 className="text-sm font-semibold text-emerald-400 flex items-center gap-1.5 mb-2.5 font-mono uppercase tracking-wider">
+            <h3 className="text-sm font-semibold text-emerald-600 dark:text-emerald-400 flex items-center gap-1.5 mb-2.5 font-mono uppercase tracking-wider">
               <Award className="w-4 h-4" /> Aturan Servis & Posisi Berdiri
             </h3>
-            <ul className="space-y-2 text-xs text-slate-300">
+            <ul className="space-y-2 text-xs text-slate-600 dark:text-slate-300">
               <li className="flex items-start gap-2">
                 <CheckCircle2 className="w-4 h-4 text-emerald-500 shrink-0 mt-0.5" />
                 <span><strong>Skor Genap (0, 2, 4, ...):</strong> Pemain yang melakukan servis harus berdiri di <strong>kotak servis kanan</strong> dan memukul shuttlecock secara diagonal ke kotak kanan lawan.</span>
@@ -96,10 +96,10 @@ export const RulesInfo: React.FC = () => {
         <div className="space-y-6 animate-fadeIn">
           {/* Table Tennis Rules */}
           <div>
-            <h3 className="text-sm font-semibold text-blue-400 flex items-center gap-1.5 mb-2.5 font-mono uppercase tracking-wider">
+            <h3 className="text-sm font-semibold text-blue-600 dark:text-blue-400 flex items-center gap-1.5 mb-2.5 font-mono uppercase tracking-wider">
               <Award className="w-4 h-4" /> Sistem Penilaian (ITTF)
             </h3>
-            <ul className="space-y-2 text-xs text-slate-300">
+            <ul className="space-y-2 text-xs text-slate-600 dark:text-slate-300">
               <li className="flex items-start gap-2">
                 <CheckCircle2 className="w-4 h-4 text-blue-500 shrink-0 mt-0.5" />
                 <span>Format pertandingan Tenis Meja: Pemenang pada sistem <strong>Best of 3 adalah pemain yang memenangkan 3 set terlebih dahulu</strong>, dan pada sistem <strong>Best of 5 pemenang adalah pemain yang memenangkan 5 set terlebih dahulu</strong>.</span>
@@ -116,10 +116,10 @@ export const RulesInfo: React.FC = () => {
           </div>
 
           <div>
-            <h3 className="text-sm font-semibold text-blue-400 flex items-center gap-1.5 mb-2.5 font-mono uppercase tracking-wider">
+            <h3 className="text-sm font-semibold text-blue-600 dark:text-blue-400 flex items-center gap-1.5 mb-2.5 font-mono uppercase tracking-wider">
               <Award className="w-4 h-4" /> Rotasi Servis (Pingpong)
             </h3>
-            <ul className="space-y-2 text-xs text-slate-300">
+            <ul className="space-y-2 text-xs text-slate-600 dark:text-slate-300">
               <li className="flex items-start gap-2">
                 <CheckCircle2 className="w-4 h-4 text-blue-500 shrink-0 mt-0.5" />
                 <span>Hak melakukan servis berpindah setiap kali total poin yang dimainkan bertambah <strong>2 poin</strong> (misal dari servis A ke servis B pada total skor 2, 4, 6, dst).</span>

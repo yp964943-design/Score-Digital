@@ -36,12 +36,12 @@ export const HistoryList: React.FC<HistoryListProps> = ({
 
   if (history.length === 0) {
     return (
-      <div id="history-empty-state" className="flex flex-col items-center justify-center p-12 text-center bg-slate-900/40 rounded-2xl border border-slate-800 backdrop-blur-sm shadow-xl">
-        <div className="w-16 h-16 rounded-full bg-slate-950 flex items-center justify-center text-slate-500 border border-slate-800 mb-4">
+      <div id="history-empty-state" className="flex flex-col items-center justify-center p-12 text-center bg-white/80 dark:bg-slate-900/40 rounded-2xl border border-slate-200 dark:border-slate-800 backdrop-blur-sm shadow-lg dark:shadow-none">
+        <div className="w-16 h-16 rounded-full bg-slate-100 dark:bg-slate-950 flex items-center justify-center text-slate-400 dark:text-slate-500 border border-slate-200 dark:border-slate-800 mb-4">
           <Calendar className="w-8 h-8" />
         </div>
-        <h3 className="text-lg font-bold text-white mb-1">Belum Ada Riwayat</h3>
-        <p className="text-xs text-slate-400 max-w-sm mb-4">
+        <h3 className="text-lg font-bold text-slate-900 dark:text-white mb-1">Belum Ada Riwayat</h3>
+        <p className="text-xs text-slate-500 dark:text-slate-400 max-w-sm mb-4">
           Semua hasil pertandingan yang Anda selesaikan akan otomatis tercatat dan disimpan di sini secara lokal.
         </p>
       </div>
@@ -53,8 +53,8 @@ export const HistoryList: React.FC<HistoryListProps> = ({
       {/* Header and Clear All Actions */}
       <div className="flex items-center justify-between">
         <div>
-          <h2 className="text-xl font-bold text-white tracking-tight">Riwayat Pertandingan</h2>
-          <p className="text-xs text-slate-400">Total {history.length} pertandingan tercatat secara lokal</p>
+          <h2 className="text-xl font-bold text-slate-900 dark:text-white tracking-tight">Riwayat Pertandingan</h2>
+          <p className="text-xs text-slate-500 dark:text-slate-400">Total {history.length} pertandingan tercatat secara lokal</p>
         </div>
         <button
           onClick={() => {
@@ -62,7 +62,7 @@ export const HistoryList: React.FC<HistoryListProps> = ({
               onClearAll();
             }
           }}
-          className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold bg-red-500/10 hover:bg-red-500/20 text-red-400 border border-red-500/20 transition-all cursor-pointer"
+          className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold bg-red-50 dark:bg-red-500/10 hover:bg-red-100 dark:hover:bg-red-500/20 text-red-600 dark:text-red-400 border border-red-200 dark:border-red-500/20 transition-all cursor-pointer"
         >
           <Trash className="w-4 h-4" />
           Hapus Semua
@@ -83,7 +83,7 @@ export const HistoryList: React.FC<HistoryListProps> = ({
           return (
             <div
               key={match.id}
-              className="relative bg-slate-900/40 rounded-2xl border border-slate-800/80 p-5 hover:border-slate-700/80 transition-all shadow-lg flex flex-col justify-between"
+              className="relative bg-white/90 dark:bg-slate-900/40 rounded-2xl border border-slate-200 dark:border-slate-800/80 p-5 hover:border-slate-300 dark:hover:border-slate-700/80 transition-all shadow-md dark:shadow-lg flex flex-col justify-between"
             >
               {/* Card Header Info */}
               <div className="flex items-start justify-between mb-4">
@@ -91,13 +91,13 @@ export const HistoryList: React.FC<HistoryListProps> = ({
                   <span
                     className={`px-2.5 py-0.5 rounded-md text-[10px] font-bold font-mono tracking-wider uppercase ${
                       isBadminton
-                        ? "bg-emerald-500/10 text-emerald-400 border border-emerald-500/20"
-                        : "bg-blue-500/10 text-blue-400 border border-blue-500/20"
+                        ? "bg-emerald-50 dark:bg-emerald-500/10 text-emerald-700 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-500/20"
+                        : "bg-blue-50 dark:bg-blue-500/10 text-blue-700 dark:text-blue-400 border border-blue-200 dark:border-blue-500/20"
                     }`}
                   >
                     {isBadminton ? "Bulu Tangkis" : "Tenis Meja"}
                   </span>
-                  <span className="px-2 py-0.5 rounded-md text-[10px] bg-slate-950/60 text-slate-400 border border-slate-800 font-mono">
+                  <span className="px-2 py-0.5 rounded-md text-[10px] bg-slate-100 dark:bg-slate-950/60 text-slate-600 dark:text-slate-400 border border-slate-200 dark:border-slate-800 font-mono">
                     {isSingles ? "Tunggal" : "Ganda"}
                   </span>
                 </div>
@@ -107,7 +107,7 @@ export const HistoryList: React.FC<HistoryListProps> = ({
                       onDeleteEntry(match.id);
                     }
                   }}
-                  className="p-1.5 rounded-lg bg-slate-950/40 hover:bg-red-500/10 text-slate-400 hover:text-red-400 border border-transparent hover:border-red-500/20 transition-all cursor-pointer"
+                  className="p-1.5 rounded-lg bg-slate-100 dark:bg-slate-950/40 hover:bg-red-100 dark:hover:bg-red-500/10 text-slate-500 dark:text-slate-400 hover:text-red-600 dark:hover:text-red-400 border border-transparent hover:border-red-200 dark:hover:border-red-500/20 transition-all cursor-pointer"
                   title="Hapus pertandingan"
                 >
                   <Trash2 className="w-3.5 h-3.5" />
@@ -119,12 +119,12 @@ export const HistoryList: React.FC<HistoryListProps> = ({
                 {/* Team A Info */}
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-2 min-w-0">
-                    <div className={`w-2.5 h-2.5 rounded-full ${match.winner === "A" ? "bg-amber-400" : "bg-slate-700"}`}></div>
-                    <span className={`text-xs font-bold truncate ${match.winner === "A" ? "text-amber-200" : "text-slate-300"}`}>
+                    <div className={`w-2.5 h-2.5 rounded-full ${match.winner === "A" ? "bg-amber-500" : "bg-slate-300 dark:bg-slate-700"}`}></div>
+                    <span className={`text-xs font-bold truncate ${match.winner === "A" ? "text-amber-800 dark:text-amber-200" : "text-slate-700 dark:text-slate-300"}`}>
                       {teamANames}
                     </span>
                   </div>
-                  <span className={`text-xs font-mono font-bold px-1.5 py-0.5 rounded ${match.winner === "A" ? "bg-amber-400/10 text-amber-400" : "text-slate-500"}`}>
+                  <span className={`text-xs font-mono font-bold px-1.5 py-0.5 rounded ${match.winner === "A" ? "bg-amber-100 dark:bg-amber-400/10 text-amber-700 dark:text-amber-400" : "text-slate-400 dark:text-slate-500"}`}>
                     TIM A
                   </span>
                 </div>
@@ -132,26 +132,26 @@ export const HistoryList: React.FC<HistoryListProps> = ({
                 {/* Team B Info */}
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-2 min-w-0">
-                    <div className={`w-2.5 h-2.5 rounded-full ${match.winner === "B" ? "bg-amber-400" : "bg-slate-700"}`}></div>
-                    <span className={`text-xs font-bold truncate ${match.winner === "B" ? "text-amber-200" : "text-slate-300"}`}>
+                    <div className={`w-2.5 h-2.5 rounded-full ${match.winner === "B" ? "bg-amber-500" : "bg-slate-300 dark:bg-slate-700"}`}></div>
+                    <span className={`text-xs font-bold truncate ${match.winner === "B" ? "text-amber-800 dark:text-amber-200" : "text-slate-700 dark:text-slate-300"}`}>
                       {teamBNames}
                     </span>
                   </div>
-                  <span className={`text-xs font-mono font-bold px-1.5 py-0.5 rounded ${match.winner === "B" ? "bg-amber-400/10 text-amber-400" : "text-slate-500"}`}>
+                  <span className={`text-xs font-mono font-bold px-1.5 py-0.5 rounded ${match.winner === "B" ? "bg-amber-100 dark:bg-amber-400/10 text-amber-700 dark:text-amber-400" : "text-slate-400 dark:text-slate-500"}`}>
                     TIM B
                   </span>
                 </div>
 
                 {/* Score Summary Blocks */}
-                <div className="mt-3 flex items-center gap-1 bg-slate-950/80 p-2.5 rounded-xl border border-slate-800/80 justify-center">
-                  <span className="text-[10px] font-bold text-slate-400 uppercase font-mono mr-2">Set:</span>
+                <div className="mt-3 flex items-center gap-1 bg-slate-100 dark:bg-slate-950/80 p-2.5 rounded-xl border border-slate-200 dark:border-slate-800/80 justify-center">
+                  <span className="text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase font-mono mr-2">Set:</span>
                   {match.sets.map((set, idx) => (
                     <div
                       key={`set-result-${idx}`}
                       className={`px-2.5 py-1 rounded text-xs font-mono font-bold border ${
                         set.winner === "A"
-                          ? "bg-amber-500/5 border-amber-500/20 text-amber-300"
-                          : "bg-slate-800/50 border-slate-700 text-slate-300"
+                          ? "bg-amber-100/70 dark:bg-amber-500/5 border-amber-300 dark:border-amber-500/20 text-amber-800 dark:text-amber-300"
+                          : "bg-slate-200/60 dark:bg-slate-800/50 border-slate-300 dark:border-slate-700 text-slate-700 dark:text-slate-300"
                       }`}
                     >
                       {set.scoreA}-{set.scoreB}
@@ -161,19 +161,19 @@ export const HistoryList: React.FC<HistoryListProps> = ({
               </div>
 
               {/* Card Footer (Duration / Date / Winner name) */}
-              <div className="pt-3 border-t border-slate-800/60 flex items-center justify-between text-[11px] text-slate-400 font-mono">
+              <div className="pt-3 border-t border-slate-200 dark:border-slate-800/60 flex items-center justify-between text-[11px] text-slate-500 dark:text-slate-400 font-mono">
                 <div className="flex items-center gap-1.5">
-                  <Clock className="w-3.5 h-3.5 text-slate-500" />
+                  <Clock className="w-3.5 h-3.5 text-slate-400 dark:text-slate-500" />
                   <span>{formatDuration(match.durationSeconds)}</span>
                 </div>
                 <div className="flex items-center gap-1.5">
-                  <Calendar className="w-3.5 h-3.5 text-slate-500" />
+                  <Calendar className="w-3.5 h-3.5 text-slate-400 dark:text-slate-500" />
                   <span>{formatDate(match.date)}</span>
                 </div>
               </div>
 
               {/* Absolute winner crown floating badge */}
-              <div className="absolute -top-2.5 -right-2.5 bg-gradient-to-r from-amber-500 to-yellow-400 text-slate-950 rounded-full p-1.5 shadow-lg border-2 border-slate-950 flex items-center justify-center">
+              <div className="absolute -top-2.5 -right-2.5 bg-gradient-to-r from-amber-500 to-yellow-400 text-slate-950 rounded-full p-1.5 shadow-md border-2 border-white dark:border-slate-950 flex items-center justify-center">
                 <Trophy className="w-3.5 h-3.5" />
               </div>
             </div>

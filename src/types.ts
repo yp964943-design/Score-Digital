@@ -26,6 +26,28 @@ export interface MatchSettings {
   playerNames: PlayerNames;
 }
 
+export enum ScheduleStatus {
+  UPCOMING = "upcoming", // Akan Datang
+  IN_PROGRESS = "in_progress", // Sedang Berlangsung
+  COMPLETED = "completed", // Selesai
+  CANCELLED = "cancelled", // Dibatalkan
+}
+
+export interface ScheduledMatch {
+  id: string;
+  datetime: string; // ISO datetime string "YYYY-MM-DDTHH:mm"
+  court: string; // e.g. "Lapangan 1", "Meja 3"
+  sport: SportType;
+  mode: GameMode;
+  targetPoints: number;
+  bestOfSets: number;
+  deuceEnabled: boolean;
+  playerNames: PlayerNames;
+  stage?: string; // e.g. "Babak Penyisihan", "Perempat Final", "Semifinal", "Final", "Persahabatan"
+  status: ScheduleStatus;
+  notes?: string;
+}
+
 export interface SetScore {
   scoreA: number;
   scoreB: number;

@@ -62,9 +62,9 @@ export const CourtVisualizer: React.FC<CourtVisualizerProps> = ({
     const servesRemaining = serveInterval - servesCompletedInCurrentPeriod;
 
     return (
-      <div id="table-tennis-court-container" className="flex flex-col items-center justify-center p-4 bg-slate-900/40 rounded-2xl border border-slate-800 backdrop-blur-sm">
-        <div className="text-xs font-mono text-slate-400 mb-3 flex items-center gap-2">
-          <span className="w-2 h-2 rounded-full bg-cyan-400 animate-pulse"></span>
+      <div id="table-tennis-court-container" className="flex flex-col items-center justify-center p-4 bg-white/80 dark:bg-slate-900/40 rounded-2xl border border-slate-200 dark:border-slate-800 backdrop-blur-sm shadow-md dark:shadow-none">
+        <div className="text-xs font-mono text-slate-600 dark:text-slate-400 mb-3 flex items-center gap-2 font-bold">
+          <span className="w-2 h-2 rounded-full bg-cyan-500 animate-pulse"></span>
           VISUALISASI MEJA PINGPONG (TENIS MEJA)
         </div>
 
@@ -309,9 +309,9 @@ export const CourtVisualizer: React.FC<CourtVisualizerProps> = ({
   // - Bottom half = LEFT service court (odd scores).
 
   return (
-    <div id="badminton-court-container" className="flex flex-col items-center justify-center p-4 bg-slate-900/40 rounded-2xl border border-slate-800 backdrop-blur-sm">
-      <div className="text-xs font-mono text-slate-400 mb-3 flex items-center gap-2">
-        <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
+    <div id="badminton-court-container" className="flex flex-col items-center justify-center p-4 bg-white/80 dark:bg-slate-900/40 rounded-2xl border border-slate-200 dark:border-slate-800 backdrop-blur-sm shadow-md dark:shadow-none">
+      <div className="text-xs font-mono text-slate-600 dark:text-slate-400 mb-3 flex items-center gap-2 font-bold">
+        <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
         VISUALISASI LAPANGAN BULU TANGKIS (BADMINTON)
       </div>
 
