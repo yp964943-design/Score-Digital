@@ -42,61 +42,61 @@ interface MatchScheduleProps {
 export const defaultScheduleItems: Omit<ScheduledMatch, "id">[] = [
   {
     datetime: new Date(Date.now() + 1000 * 60 * 30).toISOString().slice(0, 16), // 30 mins from now
-    court: "Lapangan 1 (Utama)",
-    sport: SportType.BADMINTON,
+    court: "Meja 1 (Arena Utama)",
+    sport: SportType.TABLE_TENNIS,
     mode: GameMode.DOUBLES,
-    targetPoints: 21,
-    bestOfSets: 3,
+    targetPoints: 11,
+    bestOfSets: 5,
     deuceEnabled: true,
     playerNames: {
-      teamAName: "Garuda Emas",
+      teamAName: "Spin Masters",
       teamA: ["Kevin Sanjaya", "Marcus Gideon"],
-      teamBName: "Daddies Champion",
+      teamBName: "Top Smash Duo",
       teamB: ["Mohammad Ahsan", "Hendra Setiawan"],
     },
-    stage: "Final Turnamen",
+    stage: "Final Ganda",
     status: ScheduleStatus.UPCOMING,
-    notes: "Partai puncak perebutan piala bergilir ScoreArena.",
+    notes: "Partai puncak perebutan piala bergilir Tenis Meja ScoreArena.",
   },
   {
     datetime: new Date(Date.now() + 1000 * 60 * 90).toISOString().slice(0, 16), // 1.5 hours from now
-    court: "Meja 1 (Arena A)",
+    court: "Meja 2 (Arena A)",
     sport: SportType.TABLE_TENNIS,
     mode: GameMode.SINGLES,
     targetPoints: 11,
     bestOfSets: 5,
     deuceEnabled: true,
     playerNames: {
-      teamAName: "Spin Masters",
+      teamAName: "Fast Attack",
       teamA: ["Fajar Nugraha"],
-      teamBName: "Fast Smash",
+      teamBName: "Smash Pro",
       teamB: ["Rian Pratama"],
     },
-    stage: "Semifinal",
+    stage: "Semifinal Tunggal",
     status: ScheduleStatus.UPCOMING,
-    notes: "Perebutan tiket ke babak grand final.",
+    notes: "Perebutan tiket ke babak grand final tenis meja.",
   },
   {
     datetime: new Date(Date.now() - 1000 * 60 * 45).toISOString().slice(0, 16), // 45 mins ago
-    court: "Lapangan 2",
-    sport: SportType.BADMINTON,
+    court: "Meja 3 (Arena B)",
+    sport: SportType.TABLE_TENNIS,
     mode: GameMode.SINGLES,
-    targetPoints: 21,
+    targetPoints: 11,
     bestOfSets: 3,
     deuceEnabled: true,
     playerNames: {
-      teamAName: "Tunggal Putri A",
+      teamAName: "Top Spin Putri A",
       teamA: ["Gregoria Mariska"],
-      teamBName: "Tunggal Putri B",
+      teamBName: "Loop Putri B",
       teamB: ["Putri Kusuma Wardani"],
     },
     stage: "Babak 8 Besar",
     status: ScheduleStatus.IN_PROGRESS,
-    notes: "Sedang berlangsung di lapangan 2.",
+    notes: "Sedang berlangsung sengit di meja 3.",
   },
   {
     datetime: new Date(Date.now() - 1000 * 60 * 180).toISOString().slice(0, 16), // 3 hours ago
-    court: "Meja 2 (Arena B)",
+    court: "Meja 4 (Arena C)",
     sport: SportType.TABLE_TENNIS,
     mode: GameMode.DOUBLES,
     targetPoints: 11,
@@ -124,7 +124,7 @@ export function MatchSchedule({
 }: MatchScheduleProps) {
   // Search & Filter State
   const [searchQuery, setSearchQuery] = useState("");
-  const [sportFilter, setSportFilter] = useState<"all" | SportType>("all");
+  const [modeFilter, setModeFilter] = useState<"all" | GameMode>("all");
   const [statusFilter, setStatusFilter] = useState<"all" | ScheduleStatus>("all");
   const [viewMode, setViewMode] = useState<"table" | "cards">("table");
 
@@ -136,10 +136,10 @@ export function MatchSchedule({
   const [formDatetime, setFormDatetime] = useState(
     new Date(Date.now() + 1000 * 60 * 60).toISOString().slice(0, 16)
   );
-  const [formCourt, setFormCourt] = useState("Lapangan 1");
-  const [formSport, setFormSport] = useState<SportType>(SportType.BADMINTON);
+  const [formCourt, setFormCourt] = useState("Meja 1");
+  const [formSport, setFormSport] = useState<SportType>(SportType.TABLE_TENNIS);
   const [formMode, setFormMode] = useState<GameMode>(GameMode.DOUBLES);
-  const [formTargetPoints, setFormTargetPoints] = useState(21);
+  const [formTargetPoints, setFormTargetPoints] = useState(11);
   const [formBestOfSets, setFormBestOfSets] = useState(3);
   const [formDeuceEnabled, setFormDeuceEnabled] = useState(true);
   const [formStage, setFormStage] = useState("Babak Penyisihan");
@@ -161,10 +161,10 @@ export function MatchSchedule({
   const openAddModal = () => {
     setEditingScheduleId(null);
     setFormDatetime(new Date(Date.now() + 1000 * 60 * 30).toISOString().slice(0, 16));
-    setFormCourt("Lapangan 1");
-    setFormSport(SportType.BADMINTON);
+    setFormCourt("Meja 1");
+    setFormSport(SportType.TABLE_TENNIS);
     setFormMode(GameMode.DOUBLES);
-    setFormTargetPoints(21);
+    setFormTargetPoints(11);
     setFormBestOfSets(3);
     setFormDeuceEnabled(true);
     setFormStage("Babak Penyisihan");
@@ -204,13 +204,7 @@ export function MatchSchedule({
   // Sport change handler inside form to adjust target points automatically
   const handleSportChangeInForm = (newSport: SportType) => {
     setFormSport(newSport);
-    if (newSport === SportType.BADMINTON) {
-      setFormTargetPoints(21);
-      if (!formCourt.includes("Meja")) setFormCourt("Lapangan 1");
-    } else {
-      setFormTargetPoints(11);
-      if (!formCourt.includes("Lapangan")) setFormCourt("Meja 1");
-    }
+    setFormTargetPoints(11);
   };
 
   // Submit form (Add or Edit)
@@ -270,20 +264,10 @@ export function MatchSchedule({
   const handleCopySchedule = () => {
     if (schedules.length === 0) return;
 
-    let text = `🏸 JADWAL PERTANDINGAN SCOREARENA 🏓\n`;
+    let text = `🏓 JADWAL PERTANDINGAN SCOREARENA (TENIS MEJA) 🏓\n`;
     text += `Diperbarui: ${new Date().toLocaleString("id-ID")}\n\n`;
 
     filteredSchedules.forEach((item, idx) => {
-      const dateObj = new Date(item.datetime);
-      const dateStr = dateObj.toLocaleDateString("id-ID", {
-        weekday: "short",
-        day: "numeric",
-        month: "short",
-        year: "numeric",
-      });
-      const timeStr = dateObj.toLocaleTimeString("id-ID", { hour: "2-digit", minute: "2-digit" });
-
-      const sportName = item.sport === SportType.BADMINTON ? "Bulu Tangkis" : "Tenis Meja";
       const modeName = item.mode === GameMode.SINGLES ? "Tunggal" : "Ganda";
       const teamA = item.playerNames.teamAName
         ? `${item.playerNames.teamAName} (${item.playerNames.teamA.join(" & ")})`
@@ -292,7 +276,7 @@ export function MatchSchedule({
         ? `${item.playerNames.teamBName} (${item.playerNames.teamB.join(" & ")})`
         : item.playerNames.teamB.join(" & ");
 
-      text += `${idx + 1}. [${item.court}] ${item.stage ? `[${item.stage}] ` : ""}${sportName} (${modeName})\n`;
+      text += `${idx + 1}. [${item.court}] ${item.stage ? `[${item.stage}] ` : ""}Tenis Meja (${modeName})\n`;
       text += `   ${teamA} VS ${teamB}\n`;
       text += `   Status: ${getStatusLabel(item.status)}\n\n`;
     });
@@ -323,8 +307,8 @@ export function MatchSchedule({
   const filteredSchedules = useMemo(() => {
     return schedules
       .filter((item) => {
-        // Sport filter
-        if (sportFilter !== "all" && item.sport !== sportFilter) return false;
+        // Mode filter
+        if (modeFilter !== "all" && item.mode !== modeFilter) return false;
 
         // Status filter
         if (statusFilter !== "all" && item.status !== statusFilter) return false;
@@ -354,7 +338,7 @@ export function MatchSchedule({
         return true;
       })
       .sort((a, b) => new Date(a.datetime).getTime() - new Date(b.datetime).getTime());
-  }, [schedules, sportFilter, statusFilter, searchQuery]);
+  }, [schedules, modeFilter, statusFilter, searchQuery]);
 
   // Statistics
   const upcomingCount = schedules.filter((s) => s.status === ScheduleStatus.UPCOMING).length;
@@ -471,37 +455,37 @@ export function MatchSchedule({
 
         {/* Filter Controls */}
         <div className="flex flex-wrap items-center gap-2">
-          {/* Sport Filter */}
+          {/* Mode/Format Filter */}
           <div className="flex items-center bg-slate-100 dark:bg-slate-950 p-1 rounded-xl border border-slate-200 dark:border-slate-800 text-xs">
             <button
-              onClick={() => setSportFilter("all")}
+              onClick={() => setModeFilter("all")}
               className={`px-2.5 py-1 rounded-lg font-semibold transition-all cursor-pointer ${
-                sportFilter === "all"
+                modeFilter === "all"
                   ? "bg-white dark:bg-slate-800 text-slate-900 dark:text-white shadow-sm font-bold"
                   : "text-slate-500 hover:text-slate-900 dark:hover:text-white"
               }`}
             >
-              Semua Cabor
+              Semua Format
             </button>
             <button
-              onClick={() => setSportFilter(SportType.BADMINTON)}
+              onClick={() => setModeFilter(GameMode.SINGLES)}
               className={`px-2.5 py-1 rounded-lg font-semibold flex items-center gap-1 transition-all cursor-pointer ${
-                sportFilter === SportType.BADMINTON
-                  ? "bg-white dark:bg-slate-800 text-emerald-600 dark:text-emerald-400 shadow-sm font-bold"
-                  : "text-slate-500 hover:text-slate-900 dark:hover:text-white"
-              }`}
-            >
-              <span>🏸</span> Bulu Tangkis
-            </button>
-            <button
-              onClick={() => setSportFilter(SportType.TABLE_TENNIS)}
-              className={`px-2.5 py-1 rounded-lg font-semibold flex items-center gap-1 transition-all cursor-pointer ${
-                sportFilter === SportType.TABLE_TENNIS
+                modeFilter === GameMode.SINGLES
                   ? "bg-white dark:bg-slate-800 text-cyan-600 dark:text-cyan-400 shadow-sm font-bold"
                   : "text-slate-500 hover:text-slate-900 dark:hover:text-white"
               }`}
             >
-              <span>🏓</span> Tenis Meja
+              <span>👤</span> Tunggal
+            </button>
+            <button
+              onClick={() => setModeFilter(GameMode.DOUBLES)}
+              className={`px-2.5 py-1 rounded-lg font-semibold flex items-center gap-1 transition-all cursor-pointer ${
+                modeFilter === GameMode.DOUBLES
+                  ? "bg-white dark:bg-slate-800 text-cyan-600 dark:text-cyan-400 shadow-sm font-bold"
+                  : "text-slate-500 hover:text-slate-900 dark:hover:text-white"
+              }`}
+            >
+              <span>👥</span> Ganda
             </button>
           </div>
 
@@ -574,17 +558,9 @@ export function MatchSchedule({
                       <td className="py-4 px-4 align-top">
                         <div className="space-y-1.5">
                           <div className="flex items-center gap-1.5">
-                            <span className="text-base">
-                              {schedule.sport === SportType.BADMINTON ? "🏸" : "🏓"}
-                            </span>
-                            <span
-                              className={`px-2 py-0.5 rounded-lg text-[10px] font-bold font-mono uppercase tracking-wider ${
-                                schedule.sport === SportType.BADMINTON
-                                  ? "bg-emerald-500/10 text-emerald-700 dark:text-emerald-300 border border-emerald-500/20"
-                                  : "bg-cyan-500/10 text-cyan-700 dark:text-cyan-300 border border-cyan-500/20"
-                              }`}
-                            >
-                              {schedule.sport === SportType.BADMINTON ? "Bulu Tangkis" : "Tenis Meja"}
+                            <span className="text-base">🏓</span>
+                            <span className="px-2 py-0.5 rounded-lg text-[10px] font-bold font-mono uppercase tracking-wider bg-cyan-500/10 text-cyan-700 dark:text-cyan-300 border border-cyan-500/20">
+                              Tenis Meja
                             </span>
                           </div>
                           <div className="text-[11px] font-semibold text-slate-600 dark:text-slate-300 flex items-center gap-1">
@@ -797,7 +773,6 @@ export function MatchSchedule({
                       onChange={(e) => handleSportChangeInForm(e.target.value as SportType)}
                       className="w-full appearance-none bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 focus:border-violet-500 rounded-xl px-3 py-2 pr-9 text-xs text-slate-900 dark:text-white font-bold outline-none cursor-pointer"
                     >
-                      <option value={SportType.BADMINTON}>🏸 Bulu Tangkis (Badminton)</option>
                       <option value={SportType.TABLE_TENNIS}>🏓 Tenis Meja (Pingpong)</option>
                     </select>
                     <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2.5 text-slate-400">
@@ -843,13 +818,13 @@ export function MatchSchedule({
 
                 <div>
                   <label className="text-[11px] font-bold text-slate-600 dark:text-slate-400 font-mono uppercase block mb-1">
-                    Lapangan / Venue
+                    Meja Pertandingan
                   </label>
                   <input
                     type="text"
                     value={formCourt}
                     onChange={(e) => setFormCourt(e.target.value)}
-                    placeholder="Contoh: Lapangan 1, Meja 2"
+                    placeholder="Contoh: Meja 1, Meja 2"
                     required
                     className="w-full bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 focus:border-violet-500 rounded-xl px-3 py-2 text-xs text-slate-900 dark:text-white outline-none"
                   />
@@ -995,9 +970,10 @@ export function MatchSchedule({
                     onChange={(e) => setFormBestOfSets(parseInt(e.target.value) || 3)}
                     className="w-full bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl px-3 py-2 text-xs text-slate-900 dark:text-white font-mono outline-none cursor-pointer"
                   >
-                    <option value={1}>1 Set (Single Set)</option>
-                    <option value={3}>3 Set (Best of 3 - Menang 2)</option>
-                    <option value={5}>5 Set (Best of 5 - Menang 3)</option>
+                    <option value={1}>1 Game Langsung (1 Game Selesai)</option>
+                    <option value={3}>Best of 3 Games (Menang 2 Game)</option>
+                    <option value={5}>Best of 5 Games (Menang 3 Game - Standar ITTF)</option>
+                    <option value={7}>Best of 7 Games (Menang 4 Game - Standar ITTF)</option>
                   </select>
                 </div>
 

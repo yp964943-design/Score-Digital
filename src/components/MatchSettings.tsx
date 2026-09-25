@@ -8,13 +8,13 @@ interface MatchSettingsProps {
 }
 
 export const MatchSettings: React.FC<MatchSettingsProps> = ({ onStartMatch }) => {
-  const [sport, setSport] = useState<SportType>(SportType.BADMINTON);
+  const [sport, setSport] = useState<SportType>(SportType.TABLE_TENNIS);
   const [mode, setMode] = useState<GameMode>(GameMode.SINGLES);
   const [bestOfSets, setBestOfSets] = useState<number>(3);
   const [customNames, setCustomNames] = useState<boolean>(false);
-  const [targetPoints, setTargetPoints] = useState<number>(21);
+  const [targetPoints, setTargetPoints] = useState<number>(11);
   const [deuceEnabled, setDeuceEnabled] = useState<boolean>(true);
-  const [deuceMaxPoints, setDeuceMaxPoints] = useState<number>(30);
+  const [deuceMaxPoints, setDeuceMaxPoints] = useState<number>(99);
 
   // Player Names State
   const [playerA1, setPlayerA1] = useState("Pemain A1");
@@ -26,13 +26,8 @@ export const MatchSettings: React.FC<MatchSettingsProps> = ({ onStartMatch }) =>
 
   // Sync default target points when sport changes
   useEffect(() => {
-    if (sport === SportType.BADMINTON) {
-      setTargetPoints(21);
-      setDeuceMaxPoints(30);
-    } else {
-      setTargetPoints(11);
-      setDeuceMaxPoints(99); // No practical limit for Table Tennis
-    }
+    setTargetPoints(11);
+    setDeuceMaxPoints(99); // No practical limit for Table Tennis
   }, [sport]);
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -109,7 +104,7 @@ export const MatchSettings: React.FC<MatchSettingsProps> = ({ onStartMatch }) =>
               className="text-xs font-bold text-slate-700 dark:text-slate-300 font-mono tracking-wider uppercase flex items-center justify-between"
             >
               <span>Cabang Olahraga</span>
-              <span className="text-base">{sport === SportType.BADMINTON ? "🏸" : "🏓"}</span>
+              <span className="text-base">🏓</span>
             </label>
             <div className="relative">
               <select
@@ -118,7 +113,6 @@ export const MatchSettings: React.FC<MatchSettingsProps> = ({ onStartMatch }) =>
                 onChange={(e) => setSport(e.target.value as SportType)}
                 className="w-full appearance-none bg-slate-50 dark:bg-slate-950 border-2 border-slate-200 dark:border-slate-800 hover:border-slate-300 dark:hover:border-slate-700 focus:border-violet-500 dark:focus:border-violet-500 rounded-xl px-3.5 py-2.5 pr-10 text-xs sm:text-sm font-bold text-slate-900 dark:text-white outline-none cursor-pointer transition-colors shadow-sm"
               >
-                <option value={SportType.BADMINTON}>🏸 Bulu Tangkis (Badminton)</option>
                 <option value={SportType.TABLE_TENNIS}>🏓 Tenis Meja (Pingpong)</option>
               </select>
               <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-3 text-slate-400">
@@ -126,9 +120,7 @@ export const MatchSettings: React.FC<MatchSettingsProps> = ({ onStartMatch }) =>
               </div>
             </div>
             <p className="text-[10px] text-slate-500 dark:text-slate-400 font-mono">
-              {sport === SportType.BADMINTON
-                ? "Standar BWF: 21 Poin, Deuce maks 30"
-                : "Standar ITTF: 11 Poin, Deuce selisih 2"}
+              Standar ITTF: 11 Poin, Deuce selisih 2 poin
             </p>
           </div>
 
@@ -182,29 +174,19 @@ export const MatchSettings: React.FC<MatchSettingsProps> = ({ onStartMatch }) =>
                 onChange={(e) => setBestOfSets(Number(e.target.value))}
                 className="w-full appearance-none bg-slate-50 dark:bg-slate-950 border-2 border-slate-200 dark:border-slate-800 hover:border-slate-300 dark:hover:border-slate-700 focus:border-violet-500 dark:focus:border-violet-500 rounded-xl px-3.5 py-2.5 pr-10 text-xs sm:text-sm font-bold text-slate-900 dark:text-white outline-none cursor-pointer transition-colors shadow-sm"
               >
-                <option value={1}>1 Set (Satu Set Selesai)</option>
-                <option value={3}>
-                  Best of 3 ({sport === SportType.TABLE_TENNIS ? "Target 3 Set Menang" : "Menang 2 Set"})
-                </option>
-                <option value={5}>
-                  Best of 5 ({sport === SportType.TABLE_TENNIS ? "Target 5 Set Menang" : "Menang 3 Set"})
-                </option>
-                <option value={7}>
-                  Best of 7 ({sport === SportType.TABLE_TENNIS ? "Target 7 Set Menang" : "Menang 4 Set"})
-                </option>
+                <option value={1}>1 Game Langsung (1 Game Selesai)</option>
+                <option value={3}>Best of 3 Games (Menang 2 Game)</option>
+                <option value={5}>Best of 5 Games (Menang 3 Game - Standar Resmi ITTF)</option>
+                <option value={7}>Best of 7 Games (Menang 4 Game - Standar Olimpiade/Dunia)</option>
               </select>
               <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-3 text-slate-400">
                 <ChevronDown className="w-4 h-4" />
               </div>
             </div>
             <p className="text-[10px] text-slate-500 dark:text-slate-400 font-mono">
-              {sport === SportType.TABLE_TENNIS
-                ? bestOfSets === 1
-                  ? "Format 1 set langsung selesai"
-                  : `Pemenang butuh ${bestOfSets} kemenangan set`
-                : bestOfSets === 1
-                ? "Format 1 set langsung selesai"
-                : `Pemenang butuh ${Math.ceil(bestOfSets / 2)} kemenangan set`}
+              {bestOfSets === 1
+                ? "Format 1 game langsung selesai (11 poin)"
+                : `Aturan ITTF: Pemenang adalah yang pertama meraih ${Math.ceil(bestOfSets / 2)} kemenangan game`}
             </p>
           </div>
         </div>
@@ -212,12 +194,10 @@ export const MatchSettings: React.FC<MatchSettingsProps> = ({ onStartMatch }) =>
         {/* Ringkasan Format Terpilih */}
         <div className="flex flex-wrap items-center justify-between gap-3 p-3 bg-slate-50 dark:bg-slate-950/80 rounded-xl border border-slate-200/80 dark:border-slate-800 text-xs">
           <div className="flex items-center gap-2">
-            <span className="text-xl">
-              {sport === SportType.BADMINTON ? "🏸" : "🏓"}
-            </span>
+            <span className="text-xl">🏓</span>
             <div>
               <span className="font-extrabold text-slate-900 dark:text-white">
-                {sport === SportType.BADMINTON ? "Bulu Tangkis" : "Tenis Meja"}
+                Tenis Meja
               </span>
               <span className="mx-1.5 text-slate-400">•</span>
               <span className="text-slate-600 dark:text-slate-300 font-medium">
@@ -230,7 +210,7 @@ export const MatchSettings: React.FC<MatchSettingsProps> = ({ onStartMatch }) =>
               Target {targetPoints} Poin
             </span>
             <span className="px-2.5 py-1 rounded-lg font-mono text-[11px] font-bold bg-emerald-500/10 text-emerald-700 dark:text-emerald-300 border border-emerald-500/20">
-              {bestOfSets === 1 ? "1 Set Langsung" : `Best of ${bestOfSets}`}
+              {bestOfSets === 1 ? "1 Game Langsung" : `Best of ${bestOfSets} (Target ${Math.ceil(bestOfSets / 2)} Game)`}
             </span>
           </div>
         </div>
@@ -280,7 +260,7 @@ export const MatchSettings: React.FC<MatchSettingsProps> = ({ onStartMatch }) =>
           <div className="space-y-1.5">
             <label className="text-[11px] font-bold text-slate-600 dark:text-slate-400 font-mono uppercase flex items-center justify-between">
               <span>Batas Maksimal Poin</span>
-              <span className="text-[9px] text-slate-400 dark:text-slate-500 lowercase">(BWF: 30)</span>
+              <span className="text-[9px] text-slate-400 dark:text-slate-500 lowercase">(ITTF: Bebas / 99)</span>
             </label>
             <input
               type="number"

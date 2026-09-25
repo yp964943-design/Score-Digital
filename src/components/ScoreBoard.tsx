@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef } from "react";
 import { motion, AnimatePresence } from "motion/react";
 import { MatchSettings, LiveMatchState, SetScore, UndoState, SportType, GameMode, PlayerNames } from "../types";
 import { CourtVisualizer } from "./CourtVisualizer";
+import { AppLogo } from "./AppLogo";
 import {
   playSound,
   announceScoreIndonesian,
@@ -60,9 +61,12 @@ export const ScoreBoard: React.FC<ScoreBoardProps> = ({ settings, onFinishMatch,
   // Aturan pemenang set:
   // Tenis meja: best of 3 -> menang 3 set; best of 5 -> menang 5 set; best of 1 -> menang 1 set
   // Bulu tangkis / standar: best of 3 -> menang 2 set; best of 5 -> menang 3 set; best of 1 -> 1 set
-  const targetSetsToWin = isTableTennis
-    ? settings.bestOfSets
-    : Math.ceil(settings.bestOfSets / 2);
+  // Sesuai Aturan Resmi ITTF:
+  // Best of 1 -> 1 kemenangan game
+  // Best of 3 -> 2 kemenangan game
+  // Best of 5 -> 3 kemenangan game (Standar resmi ITTF)
+  // Best of 7 -> 4 kemenangan game (Standar Olimpiade & Kejuaraan Dunia ITTF)
+  const targetSetsToWin = settings.bestOfSets === 1 ? 1 : Math.ceil(settings.bestOfSets / 2);
 
   // Sound and Voice Settings
   const [audioEnabled, setAudioEnabled] = useState<boolean>(true);
@@ -156,6 +160,7 @@ export const ScoreBoard: React.FC<ScoreBoardProps> = ({ settings, onFinishMatch,
     countdown: number;
   } | null>(null);
   const [newSetIntro, setNewSetIntro] = useState<number | null>(null);
+  const [hasNotifiedDeciding5, setHasNotifiedDeciding5] = useState<boolean>(false);
 
   // Instant Manual TTS Announcement
   const triggerManualScoreAnnouncement = () => {
@@ -314,6 +319,7 @@ export const ScoreBoard: React.FC<ScoreBoardProps> = ({ settings, onFinishMatch,
       }
     });
 
+    setHasNotifiedDeciding5(false);
     setPendingTransition(null);
   };
 
@@ -551,6 +557,7 @@ export const ScoreBoard: React.FC<ScoreBoardProps> = ({ settings, onFinishMatch,
   // Reset current set score
   const triggerReset = () => {
     setPendingTransition(null);
+    setHasNotifiedDeciding5(false);
     if (window.confirm("Apakah Anda yakin ingin menyetel ulang skor game ini kembali ke 0 - 0?")) {
       setState((prev) => {
         const nextHistory = saveUndoState(prev);
@@ -694,15 +701,16 @@ export const ScoreBoard: React.FC<ScoreBoardProps> = ({ settings, onFinishMatch,
             <ChevronLeft className="w-4 h-4" />
             <span>KEMBALI</span>
           </button>
+          <AppLogo size="sm" />
           <div>
             <div className="flex items-center gap-2">
               <h2 className="text-sm font-bold text-slate-900 dark:text-white tracking-tight">PERTANDINGAN AKTIF</h2>
-              <span className="px-2 py-0.5 rounded-full text-[9px] font-bold bg-violet-500/10 text-violet-700 dark:text-violet-400 border border-violet-200 dark:border-violet-500/20 uppercase font-mono">
-                {settings.sport === SportType.BADMINTON ? "Bulu Tangkis" : "Tenis Meja"}
+              <span className="px-2 py-0.5 rounded-full text-[9px] font-bold bg-cyan-500/10 text-cyan-700 dark:text-cyan-400 border border-cyan-200 dark:border-cyan-500/20 uppercase font-mono">
+                🏓 Tenis Meja
               </span>
             </div>
             <p className="text-[11px] text-slate-500 dark:text-slate-400 font-mono mt-0.5">
-              Target: {settings.targetPoints} Poin • {isDoubles ? "Ganda" : "Tunggal"} • {isTableTennis ? `Best of ${settings.bestOfSets} (Menang ${targetSetsToWin} Set)` : settings.bestOfSets === 1 ? "1 Set" : `Best of ${settings.bestOfSets} (Menang ${targetSetsToWin} Set)`}
+              Standar ITTF • Target {settings.targetPoints} Poin • {isDoubles ? "Ganda" : "Tunggal"} • {settings.bestOfSets === 1 ? "1 Game Langsung" : `Best of ${settings.bestOfSets} (Target ${targetSetsToWin} Game)`}
             </p>
           </div>
         </div>
@@ -791,6 +799,55 @@ export const ScoreBoard: React.FC<ScoreBoardProps> = ({ settings, onFinishMatch,
           </div>
         </div>
       )}
+
+      {/* ITTF Rule 2.14.01 Deciding Game 5-point Side Change Banner */}
+      {(() => {
+        const setsWonA = state.setScores.filter((s) => s.winner === "A").length;
+        const setsWonB = state.setScores.filter((s) => s.winner === "B").length;
+        const isDecidingGame = targetSetsToWin > 1 && setsWonA === targetSetsToWin - 1 && setsWonB === targetSetsToWin - 1;
+        const showDeciding5Alert = isDecidingGame && (state.currentScoreA >= 5 || state.currentScoreB >= 5) && !hasNotifiedDeciding5 && !state.isMatchOver && !pendingTransition;
+
+        if (!showDeciding5Alert) return null;
+
+        return (
+          <motion.div
+            initial={{ opacity: 0, y: -10 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="bg-amber-50 dark:bg-amber-950/40 border-2 border-amber-400/80 p-4 rounded-2xl flex flex-col sm:flex-row items-center justify-between gap-3 text-amber-900 dark:text-amber-200 shadow-md"
+          >
+            <div className="flex items-center gap-3">
+              <span className="text-2xl">🏓</span>
+              <div>
+                <h4 className="text-xs font-black uppercase tracking-wider font-mono flex items-center gap-1.5 text-amber-800 dark:text-amber-300">
+                  <ArrowLeftRight className="w-4 h-4 text-amber-600 dark:text-amber-400" />
+                  ATURAN ITTF 2.14: PINDAH SISI MEJA (POIN 5 SET PENENTUAN)
+                </h4>
+                <p className="text-[11px] text-amber-700 dark:text-amber-300 mt-0.5">
+                  Pada set penentu, pemain wajib bertukar sisi meja saat pemain pertama mencapai 5 poin.
+                </p>
+              </div>
+            </div>
+            <div className="flex items-center gap-2 shrink-0">
+              <button
+                onClick={() => {
+                  triggerSideSwitch();
+                  setHasNotifiedDeciding5(true);
+                }}
+                className="px-3.5 py-1.5 rounded-xl bg-amber-500 hover:bg-amber-400 text-slate-950 font-mono text-xs font-bold shadow-md cursor-pointer transition-all flex items-center gap-1"
+              >
+                <ArrowLeftRight className="w-3.5 h-3.5" />
+                Tukar Sisi Sekarang
+              </button>
+              <button
+                onClick={() => setHasNotifiedDeciding5(true)}
+                className="px-2.5 py-1.5 rounded-xl bg-amber-500/10 hover:bg-amber-500/20 text-xs font-mono font-semibold text-amber-800 dark:text-amber-300 border border-amber-500/30 cursor-pointer"
+              >
+                Sudah / Tutup
+              </button>
+            </div>
+          </motion.div>
+        );
+      })()}
 
       {/* SET TRANSITION BANNER WITH RICH ANIMATIONS */}
       <AnimatePresence>

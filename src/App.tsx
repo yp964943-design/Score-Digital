@@ -14,6 +14,7 @@ import { HistoryList } from "./components/HistoryList";
 import { RulesInfo } from "./components/RulesInfo";
 import { ThemeToggle } from "./components/ThemeToggle";
 import { MatchSchedule, defaultScheduleItems } from "./components/MatchSchedule";
+import { AppLogo } from "./components/AppLogo";
 import { Calendar, BookOpen, Settings, BarChart2, Activity, Clock } from "lucide-react";
 
 export default function App() {
@@ -28,7 +29,11 @@ export default function App() {
     try {
       const storedHistory = localStorage.getItem("sports_scoreboard_history");
       if (storedHistory) {
-        setMatchHistory(JSON.parse(storedHistory));
+        const parsedHistory = JSON.parse(storedHistory);
+        if (Array.isArray(parsedHistory)) {
+          const filtered = parsedHistory.filter((m) => m.sport !== SportType.BADMINTON);
+          setMatchHistory(filtered);
+        }
       }
     } catch (e) {
       console.error("Failed to load match history from localStorage:", e);
@@ -39,7 +44,12 @@ export default function App() {
       if (storedSchedules) {
         const parsed = JSON.parse(storedSchedules);
         if (Array.isArray(parsed) && parsed.length > 0) {
-          setSchedules(parsed);
+          const filtered = parsed.filter((item) => item.sport !== SportType.BADMINTON);
+          if (filtered.length > 0) {
+            setSchedules(filtered);
+          } else {
+            initDefaultSchedules();
+          }
         } else {
           initDefaultSchedules();
         }
@@ -129,7 +139,7 @@ export default function App() {
       targetPoints: scheduledMatch.targetPoints,
       bestOfSets: scheduledMatch.bestOfSets,
       deuceEnabled: scheduledMatch.deuceEnabled,
-      deuceMaxPoints: scheduledMatch.sport === SportType.BADMINTON ? 30 : 99,
+      deuceMaxPoints: 99,
       customNames: true,
       playerNames: scheduledMatch.playerNames,
     };
@@ -192,8 +202,8 @@ export default function App() {
 
   // Statistics Calculation
   const totalMatches = matchHistory.length;
-  const badmintonCount = matchHistory.filter((m) => m.sport === SportType.BADMINTON).length;
-  const tableTennisCount = matchHistory.filter((m) => m.sport === SportType.TABLE_TENNIS).length;
+  const singlesCount = matchHistory.filter((m) => m.mode === GameMode.SINGLES).length;
+  const doublesCount = matchHistory.filter((m) => m.mode === GameMode.DOUBLES).length;
   const upcomingSchedulesCount = schedules.filter(
     (s) => s.status === ScheduleStatus.UPCOMING || s.status === ScheduleStatus.IN_PROGRESS
   ).length;
@@ -213,15 +223,13 @@ export default function App() {
         {!activeMatch && (
           <header className="mb-8 text-center sm:text-left flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 border-b border-slate-200 dark:border-slate-900 pb-6">
             <div className="flex items-center justify-center sm:justify-start gap-3">
-              <div className="p-3 bg-gradient-to-tr from-violet-600 to-indigo-600 rounded-2xl shadow-lg shadow-indigo-500/20 text-white">
-                <Activity className="w-7 h-7" />
-              </div>
+              <AppLogo size="lg" />
               <div>
                 <h1 className="text-2xl font-extrabold tracking-tight text-slate-900 dark:text-white sm:text-3xl">
                   ScoreArena
                 </h1>
                 <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5 font-mono">
-                  Pencatat Skor Bulu Tangkis & Tenis Meja Profesional
+                  Pencatat Skor Tenis Meja Profesional • ITTF
                 </p>
               </div>
             </div>
@@ -317,25 +325,25 @@ export default function App() {
                   </div>
                 </div>
 
-                {/* Bulu Tangkis (Badminton) */}
+                {/* Kategori Tunggal */}
                 <div className="flex items-center gap-3 p-3 bg-slate-50 dark:bg-slate-900/40 rounded-xl border border-slate-200/80 dark:border-slate-800/40">
-                  <div className="p-2 bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 rounded-lg">
-                    <span className="text-sm">🏸</span>
+                  <div className="p-2 bg-cyan-500/10 text-cyan-600 dark:text-cyan-400 rounded-lg">
+                    <span className="text-sm">👤</span>
                   </div>
                   <div>
-                    <p className="text-[10px] text-slate-500 font-bold font-mono uppercase">Bulu Tangkis</p>
-                    <p className="text-sm font-extrabold text-slate-900 dark:text-white font-mono">{badmintonCount} Sesi</p>
+                    <p className="text-[10px] text-slate-500 font-bold font-mono uppercase">Tunggal (1v1)</p>
+                    <p className="text-sm font-extrabold text-slate-900 dark:text-white font-mono">{singlesCount} Sesi</p>
                   </div>
                 </div>
 
-                {/* Tenis Meja (Table Tennis) */}
+                {/* Kategori Ganda */}
                 <div className="flex items-center gap-3 p-3 bg-slate-50 dark:bg-slate-900/40 rounded-xl border border-slate-200/80 dark:border-slate-800/40">
                   <div className="p-2 bg-blue-500/10 text-blue-600 dark:text-blue-400 rounded-lg">
-                    <span className="text-sm">🏓</span>
+                    <span className="text-sm">👥</span>
                   </div>
                   <div>
-                    <p className="text-[10px] text-slate-500 font-bold font-mono uppercase">Tenis Meja</p>
-                    <p className="text-sm font-extrabold text-slate-900 dark:text-white font-mono">{tableTennisCount} Sesi</p>
+                    <p className="text-[10px] text-slate-500 font-bold font-mono uppercase">Ganda (2v2)</p>
+                    <p className="text-sm font-extrabold text-slate-900 dark:text-white font-mono">{doublesCount} Sesi</p>
                   </div>
                 </div>
 
@@ -400,7 +408,7 @@ export default function App() {
         {/* GLOBAL APP FOOTER */}
         {!activeMatch && (
           <footer className="mt-16 pt-6 border-t border-slate-200 dark:border-slate-900 text-center text-[11px] text-slate-500 font-mono">
-            <p>ScoreArena • Aplikasi Papan Skor Digital Bulu Tangkis & Tenis Meja</p>
+            <p>ScoreArena • Aplikasi Papan Skor Digital Tenis Meja</p>
             <p className="mt-1 text-slate-400 dark:text-slate-600">Disimpan secara lokal di browser Anda • Mendukung pengumuman suara & switch tema terang/gelap</p>
           </footer>
         )}

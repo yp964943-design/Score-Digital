@@ -72,7 +72,6 @@ export const HistoryList: React.FC<HistoryListProps> = ({
       {/* History Cards */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         {history.map((match) => {
-          const isBadminton = match.sport === SportType.BADMINTON;
           const isSingles = match.mode === GameMode.SINGLES;
           const winnerTeam = match.winner === "A" ? "Team A" : "Team B";
 
@@ -88,14 +87,8 @@ export const HistoryList: React.FC<HistoryListProps> = ({
               {/* Card Header Info */}
               <div className="flex items-start justify-between mb-4">
                 <div className="flex items-center gap-2">
-                  <span
-                    className={`px-2.5 py-0.5 rounded-md text-[10px] font-bold font-mono tracking-wider uppercase ${
-                      isBadminton
-                        ? "bg-emerald-50 dark:bg-emerald-500/10 text-emerald-700 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-500/20"
-                        : "bg-blue-50 dark:bg-blue-500/10 text-blue-700 dark:text-blue-400 border border-blue-200 dark:border-blue-500/20"
-                    }`}
-                  >
-                    {isBadminton ? "Bulu Tangkis" : "Tenis Meja"}
+                  <span className="px-2.5 py-0.5 rounded-md text-[10px] font-bold font-mono tracking-wider uppercase bg-cyan-50 dark:bg-cyan-500/10 text-cyan-700 dark:text-cyan-400 border border-cyan-200 dark:border-cyan-500/20">
+                    🏓 Tenis Meja
                   </span>
                   <span className="px-2 py-0.5 rounded-md text-[10px] bg-slate-100 dark:bg-slate-950/60 text-slate-600 dark:text-slate-400 border border-slate-200 dark:border-slate-800 font-mono">
                     {isSingles ? "Tunggal" : "Ganda"}
